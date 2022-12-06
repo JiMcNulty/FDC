@@ -180,15 +180,15 @@ def send_gcode_nowait(cmd=''):
 
 def send_gcode(cmd='', retries=1):
     url = BASE_URL + "/printer/gcode/script?script=%s" % cmd
-    resp = post(url)
-    success = None
     for i in range(retries):
+        resp = post(url)
         try:
             success = 'ok' in resp.json()['result']
         except KeyError:
             print("G-code command '%s', failed. Retry %i/%i" % (cmd,
                                                                 i+1,
                                                                 retries))
+            sleep(3)
         else:
             return True
     return False
