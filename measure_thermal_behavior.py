@@ -465,7 +465,7 @@ def main(args):
         raise RuntimeError("Failed to home. Aborted.")
 
     if Z_THERMAL_ADJUST: send_gcode('SET_Z_THERMAL_ADJUST enable=0')
-    if FDC_MACRO: send_gcode('SET_VGB ENABLE=0')
+    if FDC_MACRO: send_gcode('SET_FDC ENABLE=0')
 
     print(f'Setting heater targets: Bed={BED_TEMPERATURE:.1f} degC; Tool={HE_TEMPERATURE:.1f} degC')
     set_bedtemp(BED_TEMPERATURE)
@@ -506,7 +506,7 @@ def main(args):
     set_bedtemp()
     set_hetemp()
     if Z_THERMAL_ADJUST: send_gcode('SET_Z_THERMAL_ADJUST enable=1')
-    if FDC_MACRO: send_gcode('SET_VGB ENABLE=1')
+    if FDC_MACRO: send_gcode('SET_FDC ENABLE=1')
     print('='*26, "ALL MEASUREMENTS COMPLETE!","="*26, sep='\n')
 
 
@@ -527,6 +527,6 @@ if __name__ == "__main__":
         set_bedtemp()
         set_hetemp()
         if Z_THERMAL_ADJUST: send_gcode('SET_Z_THERMAL_ADJUST enable=1')
-        if FDC_MACRO: send_gcode('SET_VGB ENABLE=1')
+        if FDC_MACRO: send_gcode('SET_FDC ENABLE=1')
         stowable_end_batch()
         print("\nAborted by user! Heaters disabled.")

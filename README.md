@@ -40,6 +40,27 @@ Check out the following repositories:
 ## How to run 
 0. You are going to need a frame temp sensor! has to physically touch the frame!
    1. Also python 3.7+
+   2. Improve the speed of your probing and disable fade -  long probe sequences will captrued a distorted bed mesh due to the fast warming up of the bed and frame
+      1. For our purposes, a quick probe is usually sufficient. Below are some suggested settings:
+
+```
+[probe]
+...
+speed: 10.0
+lift_speed: 10.0
+samples: 1
+samples_result: median
+sample_retract_dist: 1.5
+samples_tolerance: 0.05
+samples_tolerance_retries: 10
+
+[bed_mesh]
+...
+speed: 500
+horizontal_move_z: 10
+fade_start: 1.0 
+fade_end: 0
+```
 1. Enable z_thermal_adjust in your config with temp_coeff=0
 2. Edit measure_thermal_behavior.py and change the required parameters.
    1. It is recommended that the bed temp will be your working bed temp, if you print ABS and PETG and require different bed temps there is a chance that the meshes will be different. A more robust version that support multiple bed temps will be made in the future
@@ -49,11 +70,16 @@ Check out the following repositories:
 4. If you have any fans / nevermore, start them to simulate the same wind you going to have in the enclosure during a print
 5. Run nohup python3 measure_thermal_behavior.py temperature_step> out.txt &
    1. temperature_step = the step accuracy in degree Celsius, default to 0.1
-6. restart the printer to remove all the bed meshes, they are there to save the progress as a recovery option, you don't need them if you got a full json file
+6. restart without saving the config to remove all the bed meshes, they are there to save the progress as a recovery option, you don't need them if you got a full json file
+   1. If you saved the config that's alright, you can manually delete the meshes later
 7. Take the output json file and run generate_FDC_meshes_z_heights.py json_file temperature_step
 8. Copy the generated mesh from the new cfg file and paste it at the bottom of your printer.cfg
 9. Copy the macro FDC.cfg to the same folder as printer.cfg
 10. Edit the macro with the min max temp, step and z_height_temps dictionary that was printed when you ran the script
     1. variable_precision is the precision of step. ie - 0.1 step is 1, 0.05 is 2, 1 is 0
 11. Add [include FDC.cfg] to your printer.cfg
-12. Restart
+12. Save + Restart
+
+### Contact
+You can dm me on discord if you have any issues, i'm on the Voron and Ratrig servers
+I don't want to put the user name here to avoid bot spamming, but search for the github link and you'll find me
