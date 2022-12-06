@@ -5,6 +5,8 @@ from time import sleep
 from requests import get, post
 import re
 import json
+import sys
+import decimal
 
 ######### META DATA #################
 # For data collection organizational purposes only. Useful when sharing dataset.
@@ -419,13 +421,29 @@ def measure():
     global index, hot_data
     print('\r',' '*50,end='\r')
     print('Measuring (#%i)...' % index,end='',flush=True)
-    hot_data.update(collect_datapoint(index))
+    data = collect_datapoint(index)
+    hot_data.update(data)
     index += 1
     print('DONE', " "*20, flush=True)
+    return data
 
 
-def main():
+def precision(step):
+    return abs(decimal.Decimal(str(step)).as_tuple().exponent)
+
+
+def round_by_step(num, step):
+    return round(round(num / step) * step, precision(step))
+
+
+def get_current_frame_temp_rounded(step):
+    t_sensors = query_temp_sensors()
+    return round_by_step(t_sensors['frame_temp'], step)
+
+
+def main(args):
     global start_time, hot_data, index
+    step = float(args[2]) if len(args) > 2 else 0.1
     metadata = gather_metadata()
 
     stowable_start_batch()
@@ -461,9 +479,14 @@ def main():
     start_time = datetime.now()
 
     print('Taking meshes measurements for the next %s min.' % (HOT_DURATION * 60), flush=True)
-
+    last_temp = 0
     while (datetime.now() - start_time) < timedelta(hours=HOT_DURATION):
-        measure()
+        current_temp = get_current_frame_temp_rounded(step)
+        if current_temp == last_temp:
+            sleep(1)
+            continue
+        data = measure()
+        last_temp = round_by_step(next(iter(data.values()))["frame_temp"], step)
         sleep(0.2)
 
     stowable_end_batch()
@@ -499,7 +522,7 @@ def debug():
 
 if __name__ == "__main__":
     try:
-        main()
+        main(sys.argv)
     except KeyboardInterrupt:
         set_bedtemp()
         set_hetemp()

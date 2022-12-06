@@ -54,14 +54,13 @@ def add_bed_mesh(config, temperature, points, extra_params):
 
 
 def gen_missing_lin_meshes_by_step(meshes, step, extra_temp):
-    dec_point = abs(decimal.Decimal(str(step)).as_tuple().exponent)
     new_meshes = configparser.ConfigParser()
     timestamps = sorted(meshes.keys())
     for i in range(0, len(timestamps)-2, 1):
         low_measurement = meshes[timestamps[i]]["mesh"]
         high_measurement = meshes[timestamps[i + 1]]["mesh"]
-        low_temp = round(round(meshes[timestamps[i]]["frame_temp"] / step) * step, dec_point)
-        high_temp = round(round(meshes[timestamps[i+1]]["frame_temp"] / step) * step, dec_point)
+        low_temp = round_by_step(meshes[timestamps[i]]["frame_temp"], step)
+        high_temp = round_by_step(meshes[timestamps[i+1]]["frame_temp"], step)
 
         if new_meshes.has_section("bed_mesh " + str(low_temp)):
             print("temp already exists", low_temp)
@@ -105,15 +104,22 @@ def gen_lin_z_offset_two_points(low_temp, high_temp, low_z, high_z, step, extra_
     return new_z_offsets
 
 
+def precision(step):
+    return abs(decimal.Decimal(str(step)).as_tuple().exponent)
+
+
+def round_by_step(num, step):
+    return round(round(num / step) * step, precision(step))
+
+
 def gen_z_offsets_per_step(z_offsets, step, extra_temp, step_distance):
-    dec_point = abs(decimal.Decimal(str(step)).as_tuple().exponent)
     new_z_offsets = OrderedDict()
     timestamps = sorted(z_offsets.keys())
     for i in range(0, len(timestamps) - 2, 1):
         low_z = z_offsets[timestamps[i]]["mcu_z"]
         high_z = z_offsets[timestamps[i+1]]["mcu_z"]
-        low_temp = round(round(z_offsets[timestamps[i]]["frame_temp"] / step) * step, dec_point)
-        high_temp = round(round(z_offsets[timestamps[i+1]]["frame_temp"] / step) * step, dec_point)
+        low_temp = round_by_step(z_offsets[timestamps[i]]["frame_temp"], step)
+        high_temp = round_by_step(z_offsets[timestamps[i+1]]["frame_temp"], step)
         if low_temp in new_z_offsets:
             print("temp already exists", low_temp)
             continue
@@ -158,11 +164,11 @@ def write_config(new_meshes, dest):
             f.write(lIndex)
 
 
-def main():
-    source_file = sys.argv[1]
+def main(args):
+    source_file = args[1]
     dest_file = source_file[:-5] + '_NEW.cfg'
-    step = float(sys.argv[2]) if len(sys.argv) > 2 else 0.1
-    extra_temp = float(sys.argv[3]) if len(sys.argv) > 3 else 3
+    step = float(args[2]) if len(args) > 2 else 0.1
+    extra_temp = float(args[3]) if len(args) > 3 else 3
 
     # Read the thermal_quant_*.json
     with open(source_file, "r") as f:
@@ -170,16 +176,22 @@ def main():
 
     thermal_data = json.loads(data)
     new_meshes = gen_missing_lin_meshes_by_step(thermal_data["hot_mesh"], step, extra_temp)
+    new_offsets_in_mm = gen_z_offsets_per_step(thermal_data["hot_mesh"], step, extra_temp, thermal_data["metadata"]["z_axis"]["step_dist"])
 
+    print("\n\n")
     print("Writing file", dest_file)
     write_config(new_meshes, dest_file)
+    print("\n\n")
 
-    new_offsets_in_mm = gen_z_offsets_per_step(thermal_data["hot_mesh"], step, extra_temp, thermal_data["metadata"]["z_axis"]["step_dist"])
     print("variable_z_height_temps:", new_offsets_in_mm)
+    print("variable_temp_min:", list(new_offsets_in_mm.keys())[0])
+    print("variable_temp_max:", list(new_offsets_in_mm.keys())[-1])
+    print("variable_step:", step)
+    print("variable_precision:", precision(step))
 
 
 if __name__ == "__main__":
     try:
-        main()
+        main(sys.argv)
     except KeyboardInterrupt:
         print("This is fine")
