@@ -33,8 +33,9 @@ If you suffer from any of the following:
 ### It WILL work for "linear deformed frames", so it's not VBG or FDC, FDC is an improved version
 
 ## Roadmap 
-1. Research different bed temps to see if there is a diffrance in the way things scale
+1. Research different bed temps to see if there is a difference in the way things scale
    1. Implement multi bed temp support if needed
+2. Generate non-linear equation to produce more points below and above captured temps
 
 ## Want to understand more?
 Check out the following repositories:
