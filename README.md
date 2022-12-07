@@ -26,7 +26,7 @@ If you suffer from any of the following:
 2. Generate a non-linear series of bed meshes and z height changes with linear changes in between data points
 3. Dynamically adjust z height using the current z_thermal_adjust module to create a non-linear change
 4. Dynamically switches bed meshes with the corresponding z height per temperature min, max and step
-5. Currently, does not generate fancy graphs and heatmaps
+5. Generate a cool graph that will show you the frame non-linear behavior
 
 ## Want to understand more?
 Check out the following repositories:

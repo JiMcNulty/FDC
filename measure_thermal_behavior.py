@@ -28,7 +28,7 @@ BED_TEMPERATURE = 80               # Bed target temperature for measurements.
 
 HE_TEMPERATURE = 220                # Extruder temperature for measurements.
 
-HOT_DURATION = 3                    # time after bed temp reached to continue
+HOT_DURATION = 4                    # time after bed temp reached to continue
                                     # measuring [hours]
 
 SOAK_TIME = 0                       # Time to wait for bed to heatsoak after
@@ -124,6 +124,7 @@ def gather_metadata():
                 "%Y-%m-%d_%H-%M-%S")
         },
         'script': {
+            'version': "FDC 2.0",
             'data_structure': 3,
             'hot_duration': HOT_DURATION,
         },

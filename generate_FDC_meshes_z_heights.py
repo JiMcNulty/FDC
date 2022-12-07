@@ -7,7 +7,7 @@ import configparser
 import io
 from collections import OrderedDict
 import decimal
-
+import matplotlib.pyplot as plt
 
 def gen_lin_meshes_two_points(low_temp, high_temp, low_mesh, high_mesh, step, extra_temp):
     # calculate per-point expansion coefficient
@@ -112,6 +112,31 @@ def round_by_step(num, step):
     return round(round(num / step) * step, precision(step))
 
 
+def generate_diff_offsets(new_z_offsets, step_distance):
+    new_offsets_in_mm = {}
+    first_z = list(new_z_offsets.values())[0]
+    for key, value in new_z_offsets.items():
+        new_offsets_in_mm[key] = (first_z - value) * step_distance
+        first_z = value
+
+    return new_offsets_in_mm
+
+
+def generate_z_offsets_plot(new_z_offsets, step_distance):
+    new_offsets_in_mm = []
+    first_z = list(new_z_offsets.values())[0]
+    for key, value in new_z_offsets.items():
+        new_offsets_in_mm.append((first_z - value) * step_distance)
+
+    plt.plot(list(new_z_offsets.keys()), new_offsets_in_mm)
+    plt.axis([list(new_z_offsets.keys())[0], list(new_z_offsets.keys())[-1], new_offsets_in_mm[0], new_offsets_in_mm[-1]])
+    plt.xlabel('Temperatures [C]')
+    plt.ylabel('Z height [mm]')
+    plt.show()
+
+    return new_offsets_in_mm
+
+
 def gen_z_offsets_per_step(z_offsets, step, extra_temp, step_distance):
     new_z_offsets = OrderedDict()
     timestamps = sorted(z_offsets.keys())
@@ -131,11 +156,8 @@ def gen_z_offsets_per_step(z_offsets, step, extra_temp, step_distance):
         new_offsets = gen_lin_z_offset_two_points(low_temp, high_temp, low_z, high_z, step, 0)
         new_z_offsets.update(new_offsets)
 
-    new_offsets_in_mm = {}
-    first_z = list(new_z_offsets.values())[0]
-    for key, value in new_z_offsets.items():
-        new_offsets_in_mm[key] = (first_z - value) * step_distance
-        first_z = value
+    new_offsets_in_mm = generate_diff_offsets(new_z_offsets, step_distance)
+    generate_z_offsets_plot(new_z_offsets, step_distance)
 
     total_z_drift = 0
     for value in new_offsets_in_mm.values():
