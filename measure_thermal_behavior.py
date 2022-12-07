@@ -57,7 +57,6 @@ MESH_CMD = "BED_MESH_CALIBRATE"     # Command to measure bed mesh for gantry/bed
 STOWABLE_PROBE_BEGIN_BATCH = " STOWABLE_PROBE_BEGIN_BATCH"  # Can be None.
 STOWABLE_PROBE_END_BATCH = "STOWABLE_PROBE_END_BATCH"       # Can be None.
 
-SAVE_MESH = "BED_MESH_PROFILE SAVE=<name>"  # Must insert the string <name>, it will be replaced with the current temp
 SAVE_CONFIG = "SAVE_CONFIG"
 
 # If using the Z_THERMAL_ADJUST module. [True/False]
@@ -66,7 +65,7 @@ Z_THERMAL_ADJUST = True
 # If using the FDC macro [True/False]
 FDC_MACRO = True
 
-# Full config section name of the frame temperature sensor (if any). E.g:
+# Full config section name of the frame temperature sensor (if any, can be None). E.g:
 CHAMBER_SENSOR = "temperature_sensor chamber"
 #CHAMBER_SENSOR = None
 
@@ -75,8 +74,8 @@ CHAMBER_SENSOR = "temperature_sensor chamber"
 #                  "mug1": "temperature_sensor coffee"}
 # can be left empty if none to define.
 EXTRA_SENSORS = {}
-#####################################
-
+############### DO NOT CHANGE ###################
+SAVE_MESH = "BED_MESH_PROFILE SAVE=<name>"  # Must insert the string <name>, it will be replaced with the current temp
 
 MCU_Z_POS_RE = re.compile(r'(?P<mcu_z>(?<=stepper_z:)-*[0-9.]+)')
 
