@@ -20,6 +20,8 @@ If you suffer from any of the following:
 * As I learned while trying to fix my top layers, frame deformation isn't linear, and it's printer specific. 
 * Furthermore, the need to measure the changes to the mesh and the changes to the z height where double the time it needs to be
 * Hence - FDC
+* ![image](https://user-images.githubusercontent.com/6442378/206245509-7aa45f54-f028-4fa7-9ada-b1f44663651c.png)
+* The picture shows the Z height changes per temperture, in the middle of the bed
 
 ## What does it do?
 1. Measure changes in bed mesh and z height for x time
@@ -27,6 +29,12 @@ If you suffer from any of the following:
 3. Dynamically adjust z height using the current z_thermal_adjust module to create a non-linear change
 4. Dynamically switches bed meshes with the corresponding z height per temperature min, max and step
 5. Generate a cool graph that will show you the frame non-linear behavior
+
+### It WILL work for "linear deformed frames", so it's not VBG or FDC, FDC is an improved version
+
+## Roadmap 
+1. Research different bed temps to see if there is a diffrance in the way things scale
+   1. Implement multi bed temp support if needed
 
 ## Want to understand more?
 Check out the following repositories:
