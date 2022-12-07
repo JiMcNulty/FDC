@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+"""
+Based on the projects of Deutherius
+https://github.com/Deutherius/VGB
+"""
+
 import sys
 import re
 import numpy as np

@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+
+"""
+Based on the projects of alchemyEngine and tanaes
+https://github.com/alchemyEngine/measure_thermal_behavior
+https://github.com/tanaes/measure_thermal_behavior
+"""
+
 from datetime import timedelta, datetime
 from os import error
 from time import sleep

@@ -21,7 +21,7 @@ If you suffer from any of the following:
 * Furthermore, the need to measure the changes to the mesh and the changes to the z height where double the time it needs to be
 * Hence - FDC
 * ![image](https://user-images.githubusercontent.com/6442378/206245509-7aa45f54-f028-4fa7-9ada-b1f44663651c.png)
-* The picture shows the Z height changes per temperture, in the middle of the bed
+* The picture shows the Z height changes per temperature, in the middle of the bed
 
 ## What does it do?
 1. Measure changes in bed mesh and z height for x time
