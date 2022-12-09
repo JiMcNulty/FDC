@@ -14,6 +14,7 @@ from collections import OrderedDict
 import decimal
 import matplotlib.pyplot as plt
 
+
 def gen_lin_meshes_two_points(low_temp, high_temp, low_mesh, high_mesh, step, extra_temp):
     # calculate per-point expansion coefficient
     deltaT = high_temp - low_temp
@@ -142,6 +143,53 @@ def generate_z_offsets_plot(new_z_offsets, step_distance):
     return new_offsets_in_mm
 
 
+# def fit_points_to_curve(new_z_offsets, step_distance):
+#     from sklearn.svm import SVR
+#     from sklearn.pipeline import make_pipeline
+#     from sklearn.preprocessing import StandardScaler
+#     new_offsets_in_mm = []
+#     temps = []
+#     first_z = list(new_z_offsets.values())[0]["mcu_z"]
+#     for key, value in new_z_offsets.items():
+#         low_z = value["mcu_z"]
+#         new_offsets_in_mm.append((first_z - low_z) * step_distance)
+#         temps.append(round_by_step(value["frame_temp"], 0.1))
+#
+#     plt.plot(temps, new_offsets_in_mm)
+#     plt.axis([temps[0], temps[-1], new_offsets_in_mm[0], new_offsets_in_mm[-1]])
+#     plt.xlabel('Temperatures [C]')
+#     plt.ylabel('Z height [mm]')
+#     plt.show()
+#
+#     print(new_offsets_in_mm)
+#     regr = SVR(kernel = 'rbf')
+#     x = np.array(temps)
+#     y = np.array(new_offsets_in_mm)
+#     x = x.reshape(-1, 1)
+#     #y = y.reshape(1, -1)
+#
+#     result = regr.fit(x, y)
+#
+#     new_offsets = []
+#     new_temps = []
+#     for temp in np.arange(temps[0], temps[-1], 0.1):
+#         new_offsets.append(result.predict([[temp]])[0])
+#         new_temps.append(round_by_step(temp, 0.1))
+#     print(new_temps, new_offsets)
+#     plt.plot(new_temps, new_offsets)
+#     plt.axis([new_temps[0], new_temps[-1], new_offsets[0], new_offsets[-1]])
+#     plt.xlabel('Temperatures [C]')
+#     plt.ylabel('Z height [mm]')
+#     plt.show()
+#
+#     import statsmodels.api as sm
+#     lowess = sm.nonparametric.lowess
+#
+#     z = lowess(y, x)
+#     w = lowess(y, x, frac=1. / 3)
+#     print(z,w)
+
+
 def gen_z_offsets_per_step(z_offsets, step, extra_temp, step_distance):
     new_z_offsets = OrderedDict()
     timestamps = sorted(z_offsets.keys())
@@ -163,6 +211,7 @@ def gen_z_offsets_per_step(z_offsets, step, extra_temp, step_distance):
 
     new_offsets_in_mm = generate_diff_offsets(new_z_offsets, step_distance)
     generate_z_offsets_plot(new_z_offsets, step_distance)
+    #fit_points_to_curve(z_offsets, step_distance)
 
     total_z_drift = 0
     for value in new_offsets_in_mm.values():

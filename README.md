@@ -1,4 +1,5 @@
 # FDC - Non-linear frame deformation calibration and compensation 2.0
+### For 3D printers running Klipper
 
 ## Credits
 * This project lies upon the hard work and dedication of [Deutherius](https://github.com/Deutherius), [alchemyEngine](https://github.com/alchemyEngine) and [tanaes]( https://github.com/tanaes)
@@ -41,6 +42,8 @@ If you suffer from any of the following:
 1. Research different bed temps to see if there is a difference in the way things scale
    1. Implement multi bed temp support if needed
 2. Generate non-linear equation to produce more points below and above captured temps
+3. Save results to disk for every new mesh
+   1. Currently, only saves at the end
 
 ## Want to understand more?
 Check out the following repositories:
