@@ -59,7 +59,7 @@ Check out the following repositories:
    1. Also python 3.7+ (3.7+ as ordered dicts by default)
    2. Improve the speed of your probing and disable fade -  long probe sequences will captrued a distorted bed mesh due to the fast warming up of the bed and frame
       1. For our purposes, a quick probe is usually sufficient. Below are some suggested settings:
-      2. Keep in mind - There is a real problem in the start of the test where the frame temps rise up really fast, that casus the mesh we captured to be distorted if the mesh takes too long
+      2. Keep in mind - There is a real problem in the start of the test where the frame temps rise up really fast, that causes the mesh we captured to be distorted if the mesh takes too long
 
 ```
 [probe]
