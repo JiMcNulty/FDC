@@ -153,6 +153,7 @@ def write_metadata(meta):
                 dataout.write('# %s=%s\n' % (item, meta[section][item]))
         dataout.write('### METADATA END ###\n')
 
+
 def query_axis_bounds(axis):
     resp = get(BASE_URL + '/printer/objects/query?configfile').json()
     config = resp['result']['status']['configfile']['settings']
@@ -163,6 +164,7 @@ def query_axis_bounds(axis):
     axis_max = config[stepper]['position_max']
 
     return(axis_min, axis_max) 
+
 
 def query_xy_middle():
     resp = get(BASE_URL + '/printer/objects/query?configfile').json()
@@ -489,12 +491,12 @@ def main(args):
     last_temp = 0
     while (datetime.now() - start_time) < timedelta(hours=HOT_DURATION):
         current_temp = get_current_frame_temp_rounded(step)
-        if current_temp == last_temp:
-            sleep(1)
+        if current_temp <= last_temp:
+            sleep(15)
             continue
         data = measure()
         last_temp = round_by_step(next(iter(data.values()))["frame_temp"], step)
-        sleep(0.2)
+        sleep(5)
 
     stowable_end_batch()
 
