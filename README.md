@@ -89,9 +89,12 @@ fade_end: 0
    2. You want to let it run as much as possible until the printer frame temperature reaches the highest temp you've seen during a long print
    3. Currently, the script will not generate bed meshes and z heights above and below the captured temperatures due to its non-linear behavior 
 3. Make sure the frame is at the lowest temperature possible (like after it was idle for a night)
-4. If you have any fans / nevermore, start them to simulate the same wind you going to have in the enclosure during a print
+4. If you have any fans / nevermore, start them after the first mesh is done
+   1. Simulate the same wind you going to have in the enclosure during a print
+   2. But give it a chance to capture the initial bed mesh
 5. Run nohup python3 measure_thermal_behavior.py temperature_step> out.txt &
-   1. temperature_step = the step accuracy in degree Celsius, default to 0.1
+   1. You can run tail -F out.txt to see the output prints in realtime  
+   2. temperature_step = the step accuracy in degree Celsius, default to 0.1
 6. restart without saving the config to remove all the bed meshes, they are there to save the progress as a recovery option, you don't need them if you got a full json file
    1. If you saved the config that's alright, you can manually delete the meshes later
 7. Take the output json file and run generate_FDC_meshes_z_heights.py json_file temperature_step

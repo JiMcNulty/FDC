@@ -252,18 +252,18 @@ def tram(retries=30):
         print("No tramming configurated. Skipping.")
         return True
     if gantry_leveled():
-        print("Gantry/bed already trammed. ")
-        return True
-    if not gantry_leveled():
-        print("Tramming gantry/bed...", end='', flush=True)
-        send_gcode_nowait(TRAMMING_CMD)
-        for attempt in range(retries):
-            if gantry_leveled():
-                print("DONE", flush=True)
-                return True
-            else:
-                print(".", end='')
-                sleep(10)
+        print("Gantry/bed already trammed."
+              "But we gonna tram it again because it might have changed since warm up and going up and down 80%")
+
+    print("Tramming gantry/bed...", end='', flush=True)
+    send_gcode_nowait(TRAMMING_CMD)
+    for attempt in range(retries):
+        if gantry_leveled():
+            print("DONE", flush=True)
+            return True
+        else:
+            print(".", end='')
+            sleep(10)
     raise RuntimeError("Could not tram the gantry/bed!")
 
 
