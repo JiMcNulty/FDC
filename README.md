@@ -24,6 +24,9 @@ If you suffer from any of the following:
 * ![image](https://user-images.githubusercontent.com/6442378/206245509-7aa45f54-f028-4fa7-9ada-b1f44663651c.png)
 * The picture shows the Z height changes per temperature, in the middle of the bed
 
+### Tired of doing a bed mesh before each print?
+* If you do have some changes in your bed mesh that require doing a bed mesh before each print, you can eliminate it all together with FDC
+
 ## What does it do?
 1. Measure changes in bed mesh and z height for x time
 2. Generate a non-linear series of bed meshes and z height changes with linear changes in between data points
