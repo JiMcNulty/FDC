@@ -85,6 +85,7 @@ DATA_FILENAME = "thermal_quant_%s_%s.json" % (USER_ID,
 start_time = datetime.now() + timedelta(days=1)
 index = 0
 hot_data = {}
+metadata = {}
 BASE_URL = BASE_URL.strip('/')  # remove any errant "/" from the address
 
 
@@ -381,7 +382,7 @@ def get_cached_gcode(n=1):
 
 
 def query_mcu_z_pos():
-    send_gcode(cmd='get_position')
+    send_gcode(cmd='get_position', 5)
     gcode_cache = get_cached_gcode(n=1)
     for msg in gcode_cache:
         pos_matches = list(MCU_Z_POS_RE.finditer(msg['message']))
@@ -408,7 +409,7 @@ def heatsoak_bed():
 def collect_datapoint(index):
     stamp = datetime.now().strftime("%Y/%m/%d-%H:%M:%S")
     mesh = take_bed_mesh()
-    if not send_gcode(MEASURE_GCODE):
+    if not send_gcode(MEASURE_GCODE, 10):
         set_bedtemp()
         set_hetemp()
         err = 'MEASURE_GCODE (%s) failed. Stopping.' % MEASURE_GCODE
@@ -450,8 +451,18 @@ def get_current_frame_temp_rounded(step):
     return round_by_step(t_sensors['frame_temp'], step)
 
 
+def save_results():
+    # write output
+    output = {'metadata': metadata,
+              'hot_mesh': hot_data}
+
+    print(f"Writing results to file {DATA_FILENAME}...", end='')
+    with open(DATA_FILENAME, "w") as out_file:
+        json.dump(output, out_file, indent=4, sort_keys=True, default=str)
+    print("DONE")
+
 def main(args):
-    global start_time, hot_data, index
+    global start_time, hot_data, index, metadata
     step = float(args[2]) if len(args) > 2 else 0.1
     metadata = gather_metadata()
 
@@ -503,14 +514,7 @@ def main(args):
     print('Hot measurements complete!')
     set_bedtemp()
 
-    # write output
-    output = {'metadata': metadata,
-              'hot_mesh': hot_data}
-
-    print(f"Writing results to file {DATA_FILENAME}...", end='')
-    with open(DATA_FILENAME, "w") as out_file:
-        json.dump(output, out_file, indent=4, sort_keys=True, default=str)
-    print("DONE")
+    save_results()
 
     set_bedtemp()
     set_hetemp()
@@ -532,10 +536,11 @@ def debug():
 if __name__ == "__main__":
     try:
         main(sys.argv)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, RuntimeError) as error:
+        save_results()
         set_bedtemp()
         set_hetemp()
         if Z_THERMAL_ADJUST: send_gcode('SET_Z_THERMAL_ADJUST enable=1')
         if FDC_MACRO: send_gcode('SET_FDC ENABLE=1')
         stowable_end_batch()
-        print("\nAborted by user! Heaters disabled.")
+        print("\nStopped unexpectedly! Heaters disabled and saved the results.", error)
