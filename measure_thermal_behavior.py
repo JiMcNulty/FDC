@@ -382,7 +382,7 @@ def get_cached_gcode(n=1):
 
 
 def query_mcu_z_pos():
-    send_gcode(cmd='get_position', 5)
+    send_gcode(cmd='get_position', retries=5)
     gcode_cache = get_cached_gcode(n=1)
     for msg in gcode_cache:
         pos_matches = list(MCU_Z_POS_RE.finditer(msg['message']))
@@ -456,10 +456,11 @@ def save_results():
     output = {'metadata': metadata,
               'hot_mesh': hot_data}
 
-    print(f"Writing results to file {DATA_FILENAME}...", end='')
+    print(f"\nWriting results to file {DATA_FILENAME}...", end='')
     with open(DATA_FILENAME, "w") as out_file:
         json.dump(output, out_file, indent=4, sort_keys=True, default=str)
     print("DONE")
+
 
 def main(args):
     global start_time, hot_data, index, metadata
@@ -543,4 +544,4 @@ if __name__ == "__main__":
         if Z_THERMAL_ADJUST: send_gcode('SET_Z_THERMAL_ADJUST enable=1')
         if FDC_MACRO: send_gcode('SET_FDC ENABLE=1')
         stowable_end_batch()
-        print("\nStopped unexpectedly! Heaters disabled and saved the results.", error)
+        print("\nStopped unexpectedly! Heaters disabled and saved the results.\n", type(error), error)
