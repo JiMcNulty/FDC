@@ -45,8 +45,8 @@ If you suffer from any of the following:
 1. Research different bed temps to see if there is a difference in the way things scale
    1. Implement multi bed temp support if needed
 2. Generate non-linear equation to produce more points below and above captured temps
-3. Save results to disk for every new mesh
-   1. Currently, only saves at the end
+3. (Done) <s>Save results to disk for every new mesh</s> (Will now saves data if there is a keyboard interrupt or a runtime exception)
+   1. <s>Currently, only saves at the end</s>
 
 ## Want to understand more?
 Check out the following repositories:
