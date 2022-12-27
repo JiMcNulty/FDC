@@ -51,6 +51,12 @@ TRAMMING_CMD = "Z_TILT_ADJUST"  # Command for QGL/Z-tilt adjustments.
                                     # e.g. "QUAD_GANTRY_LEVEL", "Z_TILT_ADJUST",
                                     # "CUSTOM_MACRO", or None.
 
+# If there is a big shift in your tramming because of temperature or other things. [True/False]
+# It's better to do it before each time we mesh,
+# just like before we start a new print, otherwise the mesh might be titled
+# The down side is - the temperature is going to rise in btweeen and we are going to loose measurement points
+TRAM_EVERYTIME = True
+
 MESH_CMD = "BED_MESH_CALIBRATE"     # Command to measure bed mesh for gantry/bed
                                     # bowing/deformation measurements.
 
@@ -496,7 +502,7 @@ def main(args):
     print("DONE", flush=True)
 
     heatsoak_bed()
-    tram()
+    if TRAM_EVERYTIME: tram()
     start_time = datetime.now()
 
     print('Taking meshes measurements for the next %s min.' % (HOT_DURATION * 60), flush=True)
@@ -506,6 +512,7 @@ def main(args):
         if current_temp <= last_temp:
             sleep(15)
             continue
+        if TRAM_EVERYTIME: tram()
         data = measure()
         last_temp = round_by_step(next(iter(data.values()))["frame_temp"], step)
         sleep(5)

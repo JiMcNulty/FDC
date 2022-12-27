@@ -59,8 +59,9 @@ Check out the following repositories:
 
 ## How to run 
 0. You are going to need a frame temp sensor! has to physically touch the frame!
-   1. Also python 3.7+ (3.7+ as ordered dicts by default)
-   2. Improve the speed of your probing and disable fade -  long probe sequences will captrued a distorted bed mesh due to the fast warming up of the bed and frame
+   1. Ideal place for it will be the middle of your X gantry (which is a real pain to do), Next best thing is the middle of your Y gantry above or below your linear rail (And touching the aluminum, not the rail) 
+   2. Also python 3.7+ (3.7+ as ordered dicts by default)
+   3. Improve the speed of your probing and disable fade -  long probe sequences will capture a distorted bed mesh due to the fast warming up of the bed and frame
       1. For our purposes, a quick probe is usually sufficient. Below are some suggested settings:
       2. Keep in mind - There is a real problem in the start of the test where the frame temps rise up really fast, that causes the mesh we captured to be distorted if the mesh takes too long
 
