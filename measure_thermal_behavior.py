@@ -31,9 +31,9 @@ NOTES = ''              # anything note-worthy about this particular run,
 BASE_URL = 'http://127.0.0.1:7125'  # Printer URL (e.g. http://192.168.1.15)
                                     # leave default if running locally on Pi.
 
-BED_TEMPERATURE = 80               # Bed target temperature for measurements.
+BED_TEMPERATURE = 103               # Bed target temperature for measurements.
 
-HE_TEMPERATURE = 220                # Extruder temperature for measurements.
+HE_TEMPERATURE = 235                # Extruder temperature for measurements.
 
 HOT_DURATION = 4                    # time after bed temp reached to continue
                                     # measuring [hours]
@@ -54,7 +54,12 @@ TRAMMING_CMD = "Z_TILT_ADJUST"  # Command for QGL/Z-tilt adjustments.
 # If there is a big shift in your tramming because of temperature or other things. [True/False]
 # It's better to do it before each time we mesh,
 # just like before we start a new print, otherwise the mesh might be titled
-# The down side is - the temperature is going to rise in btweeen and we are going to loose measurement points
+# The down side is - the temperature is going to rise in between and we are going to loose measurement points
+# (Also, there is a klipper bug that after it done tramming,
+# it adjust it one last time but does not measure it,
+# this change the tramming in push it out of tolerance again,
+# there is github issue that was opened with a fix to that but for some reason they didn't merge it
+# https://github.com/Klipper3d/klipper/pull/5132 )
 TRAM_EVERYTIME = True
 
 MESH_CMD = "BED_MESH_CALIBRATE"     # Command to measure bed mesh for gantry/bed
@@ -259,8 +264,9 @@ def tram(retries=30):
         print("No tramming configurated. Skipping.")
         return True
     if gantry_leveled():
-        print("Gantry/bed already trammed."
-              "But we gonna tram it again because it might have changed since warm up and going up and down 80%")
+        # Gantry/bed already trammed.
+        # But we gonna tram it again because it might have changed since warm up and going up and down 80%"
+        print("Gantry/bed already trammed.")
 
     print("Tramming gantry/bed...", end='', flush=True)
     send_gcode_nowait(TRAMMING_CMD)
@@ -414,14 +420,14 @@ def heatsoak_bed():
 
 def collect_datapoint(index):
     stamp = datetime.now().strftime("%Y/%m/%d-%H:%M:%S")
+    pos = query_mcu_z_pos()
+    t_sensors = query_temp_sensors()
     mesh = take_bed_mesh()
     if not send_gcode(MEASURE_GCODE, 10):
         set_bedtemp()
         set_hetemp()
         err = 'MEASURE_GCODE (%s) failed. Stopping.' % MEASURE_GCODE
         raise RuntimeError(err)
-    pos = query_mcu_z_pos()
-    t_sensors = query_temp_sensors()
     datapoint = {
         stamp: {
             'mesh': mesh,
@@ -502,7 +508,6 @@ def main(args):
     print("DONE", flush=True)
 
     heatsoak_bed()
-    if TRAM_EVERYTIME: tram()
     start_time = datetime.now()
 
     print('Taking meshes measurements for the next %s min.' % (HOT_DURATION * 60), flush=True)
