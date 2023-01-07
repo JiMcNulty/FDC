@@ -14,6 +14,9 @@ If you suffer from any of the following:
 4) Bed mesh doesn't seem to work well on full plates
 5) Have to heat soak the printer for hours just for the above problems to disappear
 
+### Tired of doing a bed mesh before each print?
+* If you do have some changes in your bed mesh that require doing a bed mesh before each print, you can eliminate it all together with FDC and start your print faster
+
 ## Why 2.0?
 * I consider VGB + measure_thermal_behavior + Klipper's z_thermal_adjust to be v1.0
 * 1.0 works well for a lot of people, but it's because the diff between the needed value and the generated linear value is pretty close.
@@ -44,7 +47,7 @@ If you suffer from any of the following:
   * You ran the script with TRAM_EVERYTIME = True and the graphs of your z steppers were pretty close
     * It should look something like this:
     * ![thermal_quant__2023-01-05_07-06-02z offsets](https://user-images.githubusercontent.com/6442378/211163204-e82433ef-5dc4-409c-9416-c13ad4436a07.png)
-* So, if your output grapshs looks like this:
+* So, if your output graphs looks like this:
   * ![thermal_quant__2023-01-04_09-36-42z offsets](https://user-images.githubusercontent.com/6442378/211163224-762f99aa-8520-4af7-9857-9d8abb18908b.png)
   * ![thermal_quant__2023-01-04_09-36-42z tram offsets](https://user-images.githubusercontent.com/6442378/211163250-0e12cb6d-9bb9-4076-b6ea-53d7c3d3ae13.png)
 * Sorry buddy, You gonna need dynamic tramming
@@ -56,10 +59,7 @@ If you suffer from any of the following:
   * The dynamic z_thermal_adjust doesn't do that
 * I'm looking for better ways to implement it
   * Contact me if you have a better way!
-
-### Tired of doing a bed mesh before each print?
-* If you do have some changes in your bed mesh that require doing a bed mesh before each print, you can eliminate it all together with FDC and start your print faster
-
+  
 ## What does it do?
 1. Measure changes in bed mesh and z height for x time
 2. Generate a cool graph that will show you the frame non-linear behavior
