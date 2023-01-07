@@ -21,12 +21,11 @@ If you suffer from any of the following:
 * As I learned while trying to fix my top layers, frame deformation isn't linear, and it's printer specific. 
 * Furthermore, the need to measure the changes to the mesh and the changes to the z height where double the time it needs to be
 * Hence - FDC:
-  * VGB
-  * measure_thermal_behavior
-  * Klipper's z_thermal_adjust
-  * Dynamic and non-linear VGB (One mesh per 0.1 temperature)
-  * Dynamic and non-linear z_thermal_adjust
+  * Dynamic and non-linear VGB (up to one mesh per 0.1C!)
+  * Dynamic and non-linear z height adjust using Klipper's z_thermal_adjust module 
   * Dynamic and Non-linear tramming
+  
+
 * ![image](https://user-images.githubusercontent.com/6442378/206245509-7aa45f54-f028-4fa7-9ada-b1f44663651c.png)
 * The picture shows the Z height changes per temperature, in the middle of the bed
 
@@ -63,11 +62,12 @@ If you suffer from any of the following:
 
 ## What does it do?
 1. Measure changes in bed mesh and z height for x time
-2. Generate a non-linear series of bed meshes and z height changes with linear changes in between data points
-3. Dynamically adjust z height using the current z_thermal_adjust module to create a non-linear change
-4. Dynamically switches bed meshes with the corresponding z height per temperature min, max and step
-5. Generate a cool graph that will show you the frame non-linear behavior
-6. Currently, only works in between the captured temps!
+2. Generate a cool graph that will show you the frame non-linear behavior
+3. Generate a non-linear series of bed meshes and z height changes with linear changes in between data points
+4. Dynamically adjust z height using the current z_thermal_adjust module to create a non-linear change
+5. Dynamically switches bed meshes with the corresponding z height per temperature min, max and step
+6. Dynamically tram your bed
+7. Currently, only works in between the captured temps!
    1. So make sure the start really cold and time the test to finish with the hottest frame possible
    2. If you start the print with a lower temp then temp_min (or above temp_max) it will never change the z height
    3. If the frame temp goes above temp_max it will stop adjusting (but keep current adjustment)
