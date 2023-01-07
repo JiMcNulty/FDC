@@ -15,17 +15,51 @@ If you suffer from any of the following:
 5) Have to heat soak the printer for hours just for the above problems to disappear
 
 ## Why 2.0?
-* I consider VGB + measure_thermal_behavior + klipper's z_thermal_adjust to be v1.0
+* I consider VGB + measure_thermal_behavior + Klipper's z_thermal_adjust to be v1.0
 * 1.0 works well for a lot of people, but it's because the diff between the needed value and the generated linear value is pretty close.
 * For printers that are bigger / hotter / weaker or just unlucky, linear compensation is not enough.
 * As I learned while trying to fix my top layers, frame deformation isn't linear, and it's printer specific. 
 * Furthermore, the need to measure the changes to the mesh and the changes to the z height where double the time it needs to be
-* Hence - FDC
+* Hence - FDC:
+  * VGB
+  * measure_thermal_behavior
+  * Klipper's z_thermal_adjust
+  * Dynamic and non-linear VGB (One mesh per 0.1 temperature)
+  * Dynamic and non-linear z_thermal_adjust
+  * Dynamic and Non-linear tramming
 * ![image](https://user-images.githubusercontent.com/6442378/206245509-7aa45f54-f028-4fa7-9ada-b1f44663651c.png)
 * The picture shows the Z height changes per temperature, in the middle of the bed
 
+## Wait, Dynamic tramming?!
+* Yes.
+* But the bed mesh should take care of it!
+  * Here why it doesn't - 
+    * When you start measuring the deformation, you tram the bed at the beginning of the test (let's say at 25.1C)
+    * All the bed meshes captured are relative to the current tramming
+    * But when you start a print, you tram the bed again before your start, now at a different temperature (Let's say 35.6C)
+    * Now all the bed meshes we are going to apply are relative to the tramming of a 25.1C frame
+* There are two scenarios where we won't need dynamic tramming:
+  * You can guarantee that the tramming of your bed won't change
+    * i.e. You don't tram the bed before each print 
+    * You don't have auto tramming (z_tilt or quad) and do manual tramming with screws or something else
+  * You ran the script with TRAM_EVERYTIME = True and the graphs of your z steppers were pretty close
+    * It should look something like this:
+    * ![thermal_quant__2023-01-05_07-06-02z offsets](https://user-images.githubusercontent.com/6442378/211163204-e82433ef-5dc4-409c-9416-c13ad4436a07.png)
+* So, if your output grapshs looks like this:
+  * ![thermal_quant__2023-01-04_09-36-42z offsets](https://user-images.githubusercontent.com/6442378/211163224-762f99aa-8520-4af7-9857-9d8abb18908b.png)
+  * ![thermal_quant__2023-01-04_09-36-42z tram offsets](https://user-images.githubusercontent.com/6442378/211163250-0e12cb6d-9bb9-4076-b6ea-53d7c3d3ae13.png)
+* Sorry buddy, You gonna need dynamic tramming
+
+## Dynamic tramming development status
+* Support z tilt and quad_gantry_level
+* Currently, the only way I found how to implement it is with FORCE_MOVE Klipper command
+* It causes the head to pause for a moment when it can (when finishing a line)
+  * The dynamic z_thermal_adjust doesn't do that
+* I'm looking for better ways to implement it
+  * Contact me if you have a better way!
+
 ### Tired of doing a bed mesh before each print?
-* If you do have some changes in your bed mesh that require doing a bed mesh before each print, you can eliminate it all together with FDC
+* If you do have some changes in your bed mesh that require doing a bed mesh before each print, you can eliminate it all together with FDC and start your print faster
 
 ## What does it do?
 1. Measure changes in bed mesh and z height for x time
@@ -93,20 +127,24 @@ fade_end: 0
 4. If you have any fans / nevermore, start them after the first mesh is done
    1. Simulate the same wind you going to have in the enclosure during a print
    2. But give it a chance to capture the initial bed mesh
-5. Run nohup python3 measure_thermal_behavior.py temperature_step> out.txt &
+5. NOTE: your X bowing is directly affected by the temperature of your X gantry
+   1. So If you have a really long probe for example, the gantry will be higher from the bed then it would if it's printing the first layer, this 5mm-20mm will greatly affect the temperature of the gantry and the bowing.
+   2. Part cooling fan cool the X gantry a bit, which will also reduce the bowing, and for the first layer there is no fan so take that into account
+   3. Because it's hard and sometimes impossible to put the thermistor in the middle of the X gantry, we only have a guesstimation of it with the readings from the middle of the Y gantry, and that's why we want to reduce the things that create a large diff between the X and Y
+6. Run nohup python3 measure_thermal_behavior.py temperature_step> out.txt &
    1. You can run tail -F out.txt to see the output prints in realtime  
    2. temperature_step = the step accuracy in degree Celsius, default to 0.1
-6. restart without saving the config to remove all the bed meshes, they are there to save the progress as a recovery option, you don't need them if you got a full json file
+7. restart without saving the config to remove all the bed meshes, they are there to save the progress as a recovery option, you don't need them if you got a full json file
    1. If you saved the config that's alright, you can manually delete the meshes later
-7. Take the output json file and run generate_FDC_meshes_z_heights.py json_file temperature_step
+8. Take the output json file and run generate_FDC_meshes_z_heights.py json_file temperature_step
    1. Run it on your local PC
-8. Copy the generated mesh from the new cfg file and paste it at the bottom of your printer.cfg
-9. Copy the macro FDC.cfg to the same folder as printer.cfg
-10. Edit the macro with the min max temp, step and z_height_temps dictionary that was printed when you ran the script
+9. Copy the generated mesh from the new cfg file and paste it at the bottom of your printer.cfg
+10. Copy the macro FDC.cfg to the same folder as printer.cfg
+11. Edit the macro with the min max temp, step and z_height_temps dictionary that was printed when you ran the script
     1. variable_precision is the precision of step. ie - 0.1 step is 1, 0.05 is 2, 1 is 0
-11. Add [include FDC.cfg] to your printer.cfg
-12. Save + Restart
+12. Add [include FDC.cfg] to your printer.cfg
+13. Save + Restart
 
 ### Contact
 You can dm me on discord if you have any issues, i'm on the Voron and Ratrig servers
-I don't want to put the user name here to avoid bot spamming, but search for the github link and you'll find me
+I don't want to put the user name here to avoid bot spamming, but search for the github link, and you'll find me (t.c)

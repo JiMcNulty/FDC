@@ -88,7 +88,8 @@ EXTRA_SENSORS = {}
 ############### DO NOT CHANGE ###################
 SAVE_MESH = "BED_MESH_PROFILE SAVE=<name>"  # Must insert the string <name>, it will be replaced with the current temp
 
-MCU_Z_POS_RE = re.compile(r'(?P<mcu_z>(?<=stepper_z:)-*[0-9.]+)')
+# MCU_Z_POS_RE = re.compile(r'(?P<mcu_z>(?<=stepper_z:)-*[0-9.]+)')
+MCU_Z_POS_RE_ALL = re.compile(r'(stepper_z\d*?):(-*[0-9.]+)')
 
 date_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 DATA_FILENAME = "thermal_quant_%s_%s.json" % (USER_ID,
@@ -149,7 +150,8 @@ def gather_metadata():
         'z_axis': {
             'step_dist': step_distance,
             'max_z': max_z,
-            'homing_speed': homing_speed
+            'homing_speed': homing_speed,
+            'Tramming': TRAMMING_METHOD
         }
     }
     return meta
@@ -394,12 +396,24 @@ def get_cached_gcode(n=1):
 
 
 def query_mcu_z_pos():
+    if not send_gcode(MEASURE_GCODE, 10):
+        set_bedtemp()
+        set_hetemp()
+        err = 'MEASURE_GCODE (%s) failed. Stopping.' % MEASURE_GCODE
+        raise RuntimeError(err)
     send_gcode(cmd='get_position', retries=5)
     gcode_cache = get_cached_gcode(n=1)
     for msg in gcode_cache:
-        pos_matches = list(MCU_Z_POS_RE.finditer(msg['message']))
-        if len(pos_matches) > 1:
-            return int(pos_matches[0].group())
+        mcu = str.splitlines(msg['message'])
+        if not(len(mcu) > 0 and mcu[0].startswith("// mcu:")):
+            continue
+        pos_matches = MCU_Z_POS_RE_ALL.findall(mcu[0])
+        if len(pos_matches) < 1:
+            raise RuntimeError("Unable to parse the mcu position from: %s" % msg)
+        stepper_z_pos = {}
+        for stepper_z in pos_matches:
+            stepper_z_pos[stepper_z[0]] = int(stepper_z[1])
+        return stepper_z_pos
     return None
 
 
@@ -420,19 +434,21 @@ def heatsoak_bed():
 
 def collect_datapoint(index):
     stamp = datetime.now().strftime("%Y/%m/%d-%H:%M:%S")
-    pos = query_mcu_z_pos()
+    pos = {
+        'z_pos': None,
+        'z_pos_before_tram': None
+    }
+    if TRAM_EVERYTIME:
+        pos["z_pos_before_tram"] = query_mcu_z_pos()
+        tram()
+    pos["z_pos"] = query_mcu_z_pos()
     t_sensors = query_temp_sensors()
     mesh = take_bed_mesh()
-    if not send_gcode(MEASURE_GCODE, 10):
-        set_bedtemp()
-        set_hetemp()
-        err = 'MEASURE_GCODE (%s) failed. Stopping.' % MEASURE_GCODE
-        raise RuntimeError(err)
     datapoint = {
         stamp: {
             'mesh': mesh,
             'sample_index': index,
-            'mcu_z': pos,
+            **pos,
             **t_sensors
             }
     }
@@ -447,6 +463,8 @@ def measure():
     hot_data.update(data)
     index += 1
     print('DONE', " "*20, flush=True)
+    clear_bed_mesh()
+    park_head_center()
     return data
 
 
@@ -474,13 +492,7 @@ def save_results():
     print("DONE")
 
 
-def main(args):
-    global start_time, hot_data, index, metadata
-    step = float(args[2]) if len(args) > 2 else 0.1
-    metadata = gather_metadata()
-
-    stowable_start_batch()
-
+def home():
     print("Starting!\nHoming...", end='', flush=True)
     # Home all
     if send_gcode('G28'):
@@ -488,17 +500,19 @@ def main(args):
     else:
         raise RuntimeError("Failed to home. Aborted.")
 
-    clear_bed_mesh()
-    tram()
 
-    print("Homing...", end='', flush=True)
-    if send_gcode('G28'):
-        print("DONE", flush=True)
-    else:
-        raise RuntimeError("Failed to home. Aborted.")
+def main(args):
+    global start_time, hot_data, index, metadata
+    step = float(args[2]) if len(args) > 2 else 0.1
+    metadata = gather_metadata()
 
     if Z_THERMAL_ADJUST: send_gcode('SET_Z_THERMAL_ADJUST enable=0')
     if FDC_MACRO: send_gcode('SET_FDC ENABLE=0')
+
+    stowable_start_batch()
+    home()
+    clear_bed_mesh()
+    tram()
 
     print(f'Setting heater targets: Bed={BED_TEMPERATURE:.1f} degC; Tool={HE_TEMPERATURE:.1f} degC')
     set_bedtemp(BED_TEMPERATURE)
@@ -508,17 +522,19 @@ def main(args):
     print("DONE", flush=True)
 
     heatsoak_bed()
+    home()
+
     start_time = datetime.now()
 
     print('Taking meshes measurements for the next %s min.' % (HOT_DURATION * 60), flush=True)
     last_temp = 0
     while (datetime.now() - start_time) < timedelta(hours=HOT_DURATION):
         current_temp = get_current_frame_temp_rounded(step)
-        if current_temp <= last_temp:
+        if current_temp <= last_temp + (step * 2):
             sleep(15)
             continue
-        if TRAM_EVERYTIME: tram()
         data = measure()
+        clear_bed_mesh()
         last_temp = round_by_step(next(iter(data.values()))["frame_temp"], step)
         sleep(5)
 
@@ -536,19 +552,10 @@ def main(args):
     print('='*26, "ALL MEASUREMENTS COMPLETE!","="*26, sep='\n')
 
 
-def debug():
-    SOAK_TIME = 0.1
-    start_soak = datetime.now()
-    while(datetime.now() - start_soak < timedelta(minutes=SOAK_TIME)):
-        remaining = SOAK_TIME*60 - (datetime.now() - start_soak).seconds
-        print(f"Heatsoaking bed for {SOAK_TIME}min...[{int(remaining)}s remaining]", end='\r', flush=True)
-        sleep(0.2)
-    print(f"Heatsoaking bed for {SOAK_TIME}min...DONE"," "*20, flush=True)
-
-
 if __name__ == "__main__":
     try:
         main(sys.argv)
+        # debug(sys.argv)
     except (KeyboardInterrupt, RuntimeError) as error:
         save_results()
         set_bedtemp()
@@ -557,3 +564,55 @@ if __name__ == "__main__":
         if FDC_MACRO: send_gcode('SET_FDC ENABLE=1')
         stowable_end_batch()
         print("\nStopped unexpectedly! Heaters disabled and saved the results.\n", type(error), error)
+
+
+def debug(args):
+    global start_time, hot_data, index, metadata
+    global BED_TEMPERATURE, HE_TEMPERATURE, HOT_DURATION, SOAK_TIME
+    step = float(args[2]) if len(args) > 2 else 0.1
+
+    BED_TEMPERATURE = 0
+    HE_TEMPERATURE = 0
+    HOT_DURATION = 0.02
+    SOAK_TIME = 0
+
+    metadata = gather_metadata()
+
+    if Z_THERMAL_ADJUST: send_gcode('SET_Z_THERMAL_ADJUST enable=0')
+    if FDC_MACRO: send_gcode('SET_FDC ENABLE=0')
+
+    stowable_start_batch()
+    home()
+    clear_bed_mesh()
+    tram()
+
+    print(f'Setting heater targets: Bed={BED_TEMPERATURE:.1f} degC; Tool={HE_TEMPERATURE:.1f} degC')
+    set_bedtemp(BED_TEMPERATURE)
+    set_hetemp(HE_TEMPERATURE)
+
+    start_time = datetime.now()
+
+    print('Taking meshes measurements for the next %s min.' % (HOT_DURATION * 60), flush=True)
+    last_temp = 0
+    while (datetime.now() - start_time) < timedelta(hours=HOT_DURATION):
+        current_temp = get_current_frame_temp_rounded(step)
+        if current_temp <= last_temp:
+            sleep(15)
+            continue
+        data = measure()
+        last_temp = round_by_step(next(iter(data.values()))["frame_temp"], step)
+        sleep(5)
+
+    home()
+    stowable_end_batch()
+
+    print('Hot measurements complete!')
+    set_bedtemp()
+
+    save_results()
+
+    set_bedtemp()
+    set_hetemp()
+    if Z_THERMAL_ADJUST: send_gcode('SET_Z_THERMAL_ADJUST enable=1')
+    if FDC_MACRO: send_gcode('SET_FDC ENABLE=1')
+    print('='*26, "ALL MEASUREMENTS COMPLETE!","="*26, sep='\n')
