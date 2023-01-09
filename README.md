@@ -24,6 +24,7 @@ If you suffer from any of the following:
 * As I learned while trying to fix my top layers, frame deformation isn't linear, and it's printer specific. 
 * Furthermore, the need to measure the changes to the mesh and the changes to the z height where double the time it needs to be
 * Hence - FDC:
+  * Improved measure and generate thermal data scripts 
   * Dynamic and non-linear VGB (up to one mesh per 0.1C!)
   * Dynamic and non-linear z height adjust using Klipper's z_thermal_adjust module 
   * Dynamic and Non-linear tramming
@@ -34,17 +35,21 @@ If you suffer from any of the following:
 
 ## Wait, Dynamic tramming?!
 * Yes.
+* Only applicable for auto tramming (QGL / Z TILT)
 * But the bed mesh should take care of it!
   * Here why it doesn't - 
-    * When you start measuring the deformation, you tram the bed at the beginning of the test (let's say at 25.1C)
+    * When you start the measuring phase -  measuring the deformation, the script automatically tram the bed (QGL / Z TILT) once at the beginning of the test (let's say at 25.1C)
     * All the bed meshes captured are relative to the current tramming
-    * But when you start a print, you tram the bed again before your start, now at a different temperature (Let's say 35.6C)
-    * Now all the bed meshes we are going to apply are relative to the tramming of a 25.1C frame
+    * You inserted the results into the macro and off you go to happily start a print
+    * But when you start a print, you tram the bed <b>again</b> before your start, now at a different temperature (Let's say 35.6C)
+      * This new tramming (QGL / Z TILT) values will probably be different from the one you captured all the bed meshes in your measurement phase
+    * Now all the bed meshes FDC is going to dynamically apply are relative to the tramming of a 25.1C frame
+      * They are invalid, and will not affectively compensate the current deformation
 * There are two scenarios where we won't need dynamic tramming:
-  * You can guarantee that the tramming of your bed won't change
-    * i.e. You don't tram the bed before each print 
-    * You don't have auto tramming (z_tilt or quad) and do manual tramming with screws or something else
-  * You ran the script with TRAM_EVERYTIME = True and the graphs of your z steppers were pretty close
+  1. If you can guarantee that the tramming of your bed won't change ever and is identical to the one used in the measurement script (Which is unrealistic)
+    * i.e. You don't tram the bed before each print - Manual tramming with screws or something else 
+    * You disable auto tramming (QGL / Z TILT)
+  2. You ran the script with TRAM_EVERYTIME = True and the graphs of your z steppers were pretty close
     * It should look something like this:
     * ![thermal_quant__2023-01-05_07-06-02z offsets](https://user-images.githubusercontent.com/6442378/211163204-e82433ef-5dc4-409c-9416-c13ad4436a07.png)
 * So, if your output graphs looks like this:
@@ -66,7 +71,7 @@ If you suffer from any of the following:
 3. Generate a non-linear series of bed meshes and z height changes with linear changes in between data points
 4. Dynamically adjust z height using the current z_thermal_adjust module to create a non-linear change
 5. Dynamically switches bed meshes with the corresponding z height per temperature min, max and step
-6. Dynamically tram your bed
+6. Dynamically tram your bed - control each z stepper motor independently and apply in real time tilt / QGL corrections to keep the bed plane parallel to the gantry plane, the amount of adjustments is made according to the data that was captured in the measurement phase
 7. Currently, only works in between the captured temps!
    1. So make sure the start really cold and time the test to finish with the hottest frame possible
    2. If you start the print with a lower temp then temp_min (or above temp_max) it will never change the z height
