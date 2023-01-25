@@ -35,7 +35,7 @@ BED_TEMPERATURE = 103               # Bed target temperature for measurements.
 
 HE_TEMPERATURE = 235                # Extruder temperature for measurements.
 
-HOT_DURATION = 4                    # time after bed temp reached to continue
+HOT_DURATION = 2                    # time after bed temp reached to continue
                                     # measuring [hours]
 
 SOAK_TIME = 0                       # Time to wait for bed to heatsoak after
@@ -55,17 +55,19 @@ TRAMMING_CMD = "Z_TILT_ADJUST"  # Command for QGL/Z-tilt adjustments.
 # It's better to do it before each time we mesh,
 # just like before we start a new print, otherwise the mesh might be titled
 # The down side is - the temperature is going to rise in between and we are going to loose measurement points
-# (Also, there is a klipper bug that after it done tramming,
+# (Also, there is a (questionable) klipper bug that after the tramming is done,
 # it adjust it one last time but does not measure it,
-# this change the tramming in push it out of tolerance again,
+# this change the tramming and might push it out of tolerance again,
 # there is github issue that was opened with a fix to that but for some reason they didn't merge it
-# https://github.com/Klipper3d/klipper/pull/5132 )
+# https://github.com/Klipper3d/klipper/pull/5132
+# But, there is a chance the user that reported the issue
+# tested it while hot and had some frame deformation between measurements ;-) )
 TRAM_EVERYTIME = True
 
 MESH_CMD = "BED_MESH_CALIBRATE"     # Command to measure bed mesh for gantry/bed
                                     # bowing/deformation measurements.
 
-STOWABLE_PROBE_BEGIN_BATCH = " STOWABLE_PROBE_BEGIN_BATCH"  # Can be None.
+STOWABLE_PROBE_BEGIN_BATCH = "STOWABLE_PROBE_BEGIN_BATCH"  # Can be None.
 STOWABLE_PROBE_END_BATCH = "STOWABLE_PROBE_END_BATCH"       # Can be None.
 
 SAVE_CONFIG = "SAVE_CONFIG"
@@ -106,6 +108,8 @@ def gather_metadata():
     config = resp['result']['status']['configfile']['settings']
 
     # Gather Z axis information
+    bed_mesh = config['bed_mesh']
+    z_tilt = config['z_tilt']
     config_z = config['stepper_z']
     if 'rotation_distance' in config_z.keys():
         rot_dist = config_z['rotation_distance']
@@ -144,13 +148,15 @@ def gather_metadata():
         },
         'script': {
             'version': "FDC 2.0",
-            'data_structure': 3,
+            'data_structure': 4,
             'hot_duration': HOT_DURATION,
         },
         'z_axis': {
             'step_dist': step_distance,
             'max_z': max_z,
             'homing_speed': homing_speed,
+            'z_tilt': z_tilt,
+            'bed_mesh': bed_mesh,
             'Tramming': TRAMMING_METHOD
         }
     }
@@ -293,7 +299,7 @@ def clear_bed_mesh():
 def take_bed_mesh():
     cmd = MESH_CMD
     send_gcode(cmd, retries=3)
-    save_bed_mesh()
+    #save_bed_mesh()
     mesh = query_bed_mesh()
     return mesh
 
@@ -395,12 +401,14 @@ def get_cached_gcode(n=1):
     return resp
 
 
-def query_mcu_z_pos():
-    if not send_gcode(MEASURE_GCODE, 10):
-        set_bedtemp()
-        set_hetemp()
-        err = 'MEASURE_GCODE (%s) failed. Stopping.' % MEASURE_GCODE
-        raise RuntimeError(err)
+def get_position():
+    global metadata
+    # Making sure the toolhead is at the same Z position everytime
+    CMD = 'G1 Z%s F1500' % metadata['z_axis']['bed_mesh']['horizontal_move_z']
+    send_gcode(cmd=CMD, retries=5)
+    # get_position does not wait for the move command, IDKY
+    send_gcode(cmd='M400', retries=5)
+
     send_gcode(cmd='get_position', retries=5)
     gcode_cache = get_cached_gcode(n=1)
     for msg in gcode_cache:
@@ -415,6 +423,19 @@ def query_mcu_z_pos():
             stepper_z_pos[stepper_z[0]] = int(stepper_z[1])
         return stepper_z_pos
     return None
+
+
+def query_mcu_z_pos():
+    if not send_gcode(MEASURE_GCODE, 10):
+        set_bedtemp()
+        set_hetemp()
+        err = 'MEASURE_GCODE (%s) failed. Stopping.' % MEASURE_GCODE
+        raise RuntimeError(err)
+    return get_position()
+
+
+def query_mcu_z_pos_without_z_reset():
+    return get_position()
 
 
 def heatsoak_bed():
@@ -436,11 +457,13 @@ def collect_datapoint(index):
     stamp = datetime.now().strftime("%Y/%m/%d-%H:%M:%S")
     pos = {
         'z_pos': None,
-        'z_pos_before_tram': None
+        'z_pos_before_tram': None,
+        'z_pos_after_tram': None
     }
     if TRAM_EVERYTIME:
         pos["z_pos_before_tram"] = query_mcu_z_pos()
         tram()
+        pos["z_pos_after_tram"] = query_mcu_z_pos_without_z_reset()
     pos["z_pos"] = query_mcu_z_pos()
     t_sensors = query_temp_sensors()
     mesh = take_bed_mesh()
@@ -556,7 +579,7 @@ if __name__ == "__main__":
     try:
         main(sys.argv)
         # debug(sys.argv)
-    except (KeyboardInterrupt, RuntimeError) as error:
+    except (Exception, KeyboardInterrupt) as error:
         save_results()
         set_bedtemp()
         set_hetemp()

@@ -13,36 +13,11 @@ import io
 import decimal
 import matplotlib.pyplot as plt
 import os
+from scipy.interpolate import make_interp_spline, BSpline
+from scipy.signal import savgol_filter
+import argparse
 
-def gen_lin_meshes_two_points(low_temp, high_temp, low_mesh, high_mesh, step, extra_temp):
-    # calculate per-point expansion coefficient
-    deltaT = high_temp - low_temp
-    deltaZ = np.array(high_mesh) - np.array(low_mesh)
-    coeffs = deltaZ / deltaT
-
-    # linearly generate new meshes every <step> °C with some tolerance
-    multiplier = pow(10, len(str(high_temp)))  # hacky way of ensuring consistent numbers -> integers only
-    degrees = np.arange(low_temp * multiplier - extra_temp * multiplier, high_temp * multiplier + extra_temp * multiplier,
-                        step * multiplier)
-    degrees = degrees / multiplier
-
-    new_meshes = {}
-
-    for temperature in degrees:
-        new_mesh_fc = low_mesh + coeffs * (temperature - low_temp)
-        new_meshes[temperature] = new_mesh_fc.tolist()
-        # compare mesh if similar temp as test mesh exists
-        # if np.abs(temperature - TESTtemp) < step / 1.5:
-        #     print("Testing! " + str(i) + " and " + str(TESTtemp))
-        #     print("Absolute error:")
-        #     error = np.array(TEST) - new_mesh_fc
-        #     print(error)
-        #     MSE = np.mean(np.power(error, 2))
-        #     print("MSE: " + str(MSE))
-        #     print("Maximum absolute error is " + str(np.round(np.max(np.abs(error)), 5)) + " mm (" + str(
-        #         np.round(np.max(np.abs(error)) * 1000, 2)) + " microns)")
-    return new_meshes
-
+filter_noise = True
 
 def add_bed_mesh(config, temperature, points, extra_params):
     mesh_template_name = "bed_mesh " + str(temperature)
@@ -58,35 +33,34 @@ def add_bed_mesh(config, temperature, points, extra_params):
         config.set(mesh_template_name, key, str(extra_params[key]))
 
 
-def gen_missing_lin_meshes_by_step(meshes, step, extra_temp):
+def add_bed_meshes(temp_list, mesh_list, mesh_params, step):
     new_meshes = configparser.ConfigParser()
-    timestamps = sorted(meshes.keys())
-    for i in range(0, len(timestamps)-2, 1):
-        low_measurement = meshes[timestamps[i]]["mesh"]
-        high_measurement = meshes[timestamps[i + 1]]["mesh"]
-        low_temp = round_by_step(meshes[timestamps[i]]["frame_temp"], step)
-        high_temp = round_by_step(meshes[timestamps[i+1]]["frame_temp"], step)
-
-        if new_meshes.has_section("bed_mesh " + str(low_temp)):
-            # print("temp already exists", low_temp)
-            continue
-
-        if low_temp >= high_temp:
-            # print("next temp is the same or lower", low_temp)
-            continue
-
-        if low_temp + step == high_temp:
-            # print("high temp higher by step, just saving the current points", low_temp)
-            add_bed_mesh(new_meshes, low_temp, low_measurement["points"], low_measurement["mesh_params"])
-
-            continue
-
-        new_points = gen_lin_meshes_two_points(low_temp, high_temp,low_measurement["points"], high_measurement["points"], step, 0)
-
-        for temperature in new_points:
-            add_bed_mesh(new_meshes, temperature, new_points[temperature], low_measurement["mesh_params"])
+    for i in range(len(temp_list)):
+        add_bed_mesh(new_meshes, round_by_step(temp_list[i], step), mesh_list[i], mesh_params)
 
     return new_meshes
+
+
+def get_middle_point_from_mesh(zpoints):
+    if len(zpoints) % 2 == 0  or len(zpoints[0]) % 2 == 0:
+        raise Exception("Mesh is supposed to have an odd number of probes! (5,5) (7,7) (9,9) and so on, current probe count (%s, %s)" % (len(zpoints), len(zpoints[0])))
+    middle_y = round(len(zpoints) / 2)
+    middle_x = round(len(zpoints[0]) / 2)
+
+    # list start from 0 so -1
+    return zpoints[middle_y - 1][middle_x - 1]
+
+
+def normal_mesh_to_point(zpoints, new_middle_z):
+    return (np.array(zpoints) - new_middle_z).tolist()
+
+
+def normal_mesh_to_zero_middle(zpoints, temp, tolerance=0.002):
+    middle_z = get_middle_point_from_mesh(zpoints)
+    # tolerance is just for the print
+    if abs(middle_z) > tolerance:
+        print("Normalizing mesh %s to middle zero, drift: %s" % (temp, middle_z))
+    return normal_mesh_to_point(zpoints, middle_z)
 
 
 def gen_lin_z_offset_two_points(low_temp, high_temp, low_z, high_z, step, extra_temp):
@@ -169,17 +143,111 @@ def generate_z_offsets_plot(all_offsets, step_distance, name, output_path):
     return plt
 
 
+def convert_meshes_json_to_list(meshes, step):
+    one_point = []
+    temp_list = []
+    timestamps = sorted(meshes.keys())
+    for i in range(0, len(timestamps), 1):
+        temp = round_by_step(meshes[timestamps[i]]["frame_temp"], step)
+        if temp in temp_list:
+            print("Temperature %s already exists, skipping" % temp)
+            continue
+        if temp_list and temp < max(temp_list):
+            print("Temperature %s lower then max, skipping" % temp)
+            continue
+        measurement = meshes[timestamps[i]]["mesh"]
+        # the frame warping continue even while bed probing, so we want to reset the zero
+        measurement_points_normalized = normal_mesh_to_zero_middle(measurement["points"], temp)
+        one_point.append(measurement_points_normalized)
+        temp_list.append(temp)
+
+    return one_point, temp_list
+
+
+def filter_noise_list(y):
+    if not filter_noise:
+        return y
+    new_y = savgol_filter(y, int(len(y)), 5)
+    return new_y
+    # import statsmodels.api as sm
+    #
+    # new_y = sm.nonparametric.lowess(new_y, new_x, frac=0.3)  # 30 % lowess smoothing
+    #
+    # return new_y[:, 1]
+
+
+def interpolate_list(x,new_x, y):
+    spl = make_interp_spline(x, y, k=3)  # type: BSpline
+    new_y = spl(new_x)
+    return filter_noise_list(new_y)
+
+
+def gen_missing_meshes_by_step_interpolated(meshes, step):
+    z_meshes_3d, temp_list = convert_meshes_json_to_list(meshes, step)
+    steps_length = int(round((temp_list[-1] - temp_list[0]) / step))
+    temp_list_new = np.linspace(temp_list[0], temp_list[-1], steps_length + 1)
+    meshes_2d = np.moveaxis(z_meshes_3d, 0, -1).reshape(-1, len(z_meshes_3d))
+    z_meshes_3d_interpolated = []
+    for point_mesh in meshes_2d:
+        z_smooth = interpolate_list(temp_list, temp_list_new, point_mesh)
+        z_meshes_3d_interpolated.append(z_smooth)
+
+    z_meshes_3d_interpolated = np.array(z_meshes_3d_interpolated)
+    new_meshes = np.moveaxis(z_meshes_3d_interpolated.reshape(len(z_meshes_3d[0]), len(z_meshes_3d[0][0]), len(z_meshes_3d_interpolated[0])), -1, 0)
+    mesh_params = meshes[list(meshes.keys())[0]]["mesh"]["mesh_params"]
+    new_meshes_parsed = add_bed_meshes(temp_list_new, new_meshes, mesh_params, step)
+    plt.plot(temp_list, meshes_2d[5], label=" before interpolation mesh")
+    plt.plot(temp_list_new, z_meshes_3d_interpolated[5], label=" interpolated mesh")
+    plt.legend()
+    plt.show()
+    return new_meshes_parsed
+
+
+def gen_z_offsets_per_step_interpolated(z_offsets, stepper, step, step_distance):
+    z_offset_list = []
+    temp_list = []
+    timestamps = sorted(z_offsets.keys())
+    carry = z_offsets[timestamps[0]]["z_pos"][stepper]
+    sum = 0
+    for i in range(0, len(timestamps), 1):
+        temp = round_by_step(z_offsets[timestamps[i]]["frame_temp"], step)
+        if temp in temp_list:
+            print("Temperature %s already exists, skipping" % temp)
+            continue
+        if temp_list and temp < max(temp_list):
+            print("Temperature %s lower then max, skipping" % temp)
+            continue
+        z_offset = (carry - z_offsets[timestamps[i]]["z_pos"][stepper]) * step_distance
+        carry = z_offsets[timestamps[i]]["z_pos"][stepper]
+        sum = z_offset + sum
+        z_offset_list.append(sum)
+        temp_list.append(temp)
+
+    steps_length = int(round((temp_list[-1] - temp_list[0]) / step))
+    temp_list_new = np.linspace(temp_list[0], temp_list[-1], steps_length + 1)
+    z_smooth = interpolate_list(temp_list, temp_list_new, z_offset_list)
+
+    plt.plot(temp_list, z_offset_list, label=stepper + " before interpolation")
+    plt.plot(temp_list_new, z_smooth, label=stepper + " interpolated")
+    plt.legend()
+    plt.show()
+
+    prev_point=0
+    new_offsets_in_mm = {}
+    for i in range(len(z_smooth)):
+        new_offsets_in_mm[round_by_step(temp_list_new[i], step)] = z_smooth[i] - prev_point
+        prev_point = z_smooth[i]
+
+    return new_offsets_in_mm
+
+
 def gen_z_offsets_per_step(z_offsets, stepper, step, extra_temp, step_distance):
-    new_z_offsets = {}
     new_z_tram_offsets = {}
     timestamps = sorted(z_offsets.keys())
-
-    for i in range(0, len(timestamps) - 2, 1):
-        low_z = z_offsets[timestamps[i]]["z_pos"][stepper]
-        high_z = z_offsets[timestamps[i+1]]["z_pos"][stepper]
+    for i in range(0, len(timestamps) - 1, 1):
         low_temp = round_by_step(z_offsets[timestamps[i]]["frame_temp"], step)
         high_temp = round_by_step(z_offsets[timestamps[i+1]]["frame_temp"], step)
-        if low_temp in new_z_offsets:
+        if low_temp in new_z_tram_offsets:
             # print("temp already exists", low_temp)
             continue
 
@@ -187,35 +255,37 @@ def gen_z_offsets_per_step(z_offsets, stepper, step, extra_temp, step_distance):
             # print("next temp is the same or lower", low_temp)
             continue
 
-        new_offsets = gen_lin_z_offset_two_points(low_temp, high_temp, low_z, high_z, step, 0)
-        new_z_offsets.update(new_offsets)
         if z_offsets[timestamps[i]]["z_pos_before_tram"]:
             low_z_tram = z_offsets[timestamps[i]]["z_pos"][stepper] - z_offsets[timestamps[i]]["z_pos_before_tram"][stepper]
             high_z_tram = z_offsets[timestamps[i+1]]["z_pos"][stepper] - z_offsets[timestamps[i+1]]["z_pos_before_tram"][stepper]
+
             new_tram_offsets = gen_lin_z_offset_two_points(low_temp, high_temp, low_z_tram, high_z_tram, step, 0)
             new_z_tram_offsets.update(new_tram_offsets)
 
-    new_diff_offsets = generate_diff_offsets(new_z_offsets)
-
-    new_offsets_in_mm = convert_to_mm(new_diff_offsets, step_distance)
     new_z_tram_offsets_in_mm = convert_to_mm(new_z_tram_offsets, step_distance)
 
-    return new_offsets_in_mm, new_z_tram_offsets_in_mm
+    return new_z_tram_offsets_in_mm
 
 
-def debug_prints(z_offsets, new_offsets_in_mm, new_z_tram_offsets, stepper, step_distance):
+def debug_prints(z_offsets, new_offsets_in_mm, new_z_tram_offsets_in_mm, stepper, step_distance):
     timestamps = sorted(z_offsets.keys())
-    #fit_points_to_curve(z_offsets, step_distance)
+    # fit_points_to_curve(z_offsets, step_distance)
+    total_z_tram_drift = 0
+    for value in new_z_tram_offsets_in_mm.values():
+        total_z_tram_drift += value
+    print(stepper, "z tram drift in mm: ", total_z_tram_drift)
 
     total_z_drift = 0
-    for value in new_z_tram_offsets.values():
-        total_z_drift -= value * step_distance
-    print("z tram drift in mm: ", total_z_drift)
-
-    total_z_drift = 0
-    for value in new_offsets_in_mm.values():
-        total_z_drift -= value
+    for key, value in new_offsets_in_mm.items():
+        if key < 30.7 or key > 34.1:
+            continue
+        total_z_drift += value
     print("z drift in mm: ", total_z_drift)
+
+    # total_z_drift = 0
+    # for value in new_offsets_in_mm.values():
+    #     total_z_drift += value
+    # print("z drift in mm: ", total_z_drift)
 
     total_z_drift = 0
     for i in range(0, len(timestamps) - 2, 1):
@@ -238,10 +308,20 @@ def write_config(new_meshes, dest):
 
 
 def main(args):
+    global filter_noise
     source_file = args[1]
     dest_file = source_file[:-5] + '_NEW.cfg'
-    step = float(args[2]) if len(args) > 2 else 0.1
-    extra_temp = float(args[3]) if len(args) > 3 else 3
+
+    parser = argparse.ArgumentParser(description='Generate FDC data')
+    parser.add_argument('--step', default=0.1, metavar='--S', type=float,
+                        help='The resolution of the generated data, default is 0.1 which means a data point will'
+                             ' be generated for every 0.1C temperature')
+    parser.add_argument('--filter_noise', default=True, metavar='--FN', action=argparse.BooleanOptionalAction,
+                        help='Enable filtering noise for a smoother graph. if the generated graphs don\'t look right, disable it')
+
+    args_parser, unknown = parser.parse_known_args()
+    step = args_parser.step
+    filter_noise = args_parser.filter_noise
 
     # Read the thermal_quant_*.json
     with open(source_file, "r") as f:
@@ -250,31 +330,32 @@ def main(args):
     thermal_data = json.loads(data)
     step_distance = thermal_data["metadata"]["z_axis"]["step_dist"]
     steppers = list(thermal_data["hot_mesh"][list(thermal_data["hot_mesh"].keys())[0]]["z_pos"].keys())
+    new_meshes = gen_missing_meshes_by_step_interpolated(thermal_data["hot_mesh"], step)
     all_z_offsets = {}
     all_z_tram_offsets = {}
+
     for stepper in steppers:
-        new_meshes = gen_missing_lin_meshes_by_step(thermal_data["hot_mesh"], step, extra_temp)
-        new_offsets_in_mm, new_z_tram_offsets = gen_z_offsets_per_step(thermal_data["hot_mesh"], stepper, step,
-                                                                       extra_temp, step_distance)
-        debug_prints(thermal_data["hot_mesh"], new_offsets_in_mm, new_z_tram_offsets, stepper, step_distance)
-        all_z_offsets[stepper] = new_offsets_in_mm
-        if bool(new_z_tram_offsets):
-            all_z_tram_offsets[stepper] = new_z_tram_offsets
+        all_z_tram_offsets[stepper] = gen_z_offsets_per_step(thermal_data["hot_mesh"], stepper, step,0, step_distance)
+        all_z_offsets[stepper] = gen_z_offsets_per_step_interpolated(thermal_data["hot_mesh"], stepper, step, step_distance)
+        debug_prints(thermal_data["hot_mesh"], all_z_offsets[stepper], all_z_tram_offsets[stepper], stepper,step_distance)
 
     generate_z_offsets_plot(all_z_offsets, step_distance, "z offsets", source_file[:-5])
-    generate_z_offsets_plot(all_z_tram_offsets, step_distance, "z tram offsets", source_file[:-5])
 
-    print("variable_z_height_temps:", new_offsets_in_mm)
+    if any(x != {} for x in all_z_tram_offsets):
+        generate_z_offsets_plot(all_z_tram_offsets, step_distance, "z tram offsets", source_file[:-5])
+
+    print("\n############################ COPY FROM HERE COPY FROM HERE COPY FROM HERE ####################################\n")
+    print("variable_z_height_temps:", all_z_offsets["stepper_z"])
     print("")
     print("variable_last_trams:", gen_init_last_trams(all_z_tram_offsets))
-    print("variable_z_trams_temps:", all_z_tram_offsets)
-    if bool(all_z_tram_offsets):
+    print("variable_z_trams_temps:", all_z_offsets)
+    if any(x != {} for x in all_z_tram_offsets):
         print("variable_enable_tram: 1")
     else:
         print("variable_enable_tram: 0")
     print("")
-    print("variable_temp_min:", list(new_offsets_in_mm.keys())[0])
-    print("variable_temp_max:", list(new_offsets_in_mm.keys())[-1])
+    print("variable_temp_min:", list(all_z_offsets["stepper_z"].keys())[0])
+    print("variable_temp_max:", list(all_z_offsets["stepper_z"].keys())[-1])
     print("variable_step:", step)
     print("variable_precision:", precision(step))
 
@@ -301,71 +382,3 @@ if __name__ == "__main__":
         print("This is fine")
 
 
-
-
-
-
-
-
-
-
-
-# def generate_z_offsets_plot(new_z_offsets, step_distance):
-#     new_offsets_in_mm = []
-#     first_z = list(new_z_offsets.values())[0]
-#     for key, value in new_z_offsets.items():
-#         new_offsets_in_mm.append((first_z - value) * step_distance)
-#
-#     plt.plot(list(new_z_offsets.keys()), new_offsets_in_mm)
-#     plt.axis([list(new_z_offsets.keys())[0], list(new_z_offsets.keys())[-1], min(new_offsets_in_mm), max(new_offsets_in_mm)])
-#     plt.xlabel('Temperatures [C]')
-#     plt.ylabel('Z height [mm]')
-#     plt.show()
-#
-#     return new_offsets_in_mm
-
-# def fit_points_to_curve(new_z_offsets, step_distance):
-#     from sklearn.svm import SVR
-#     from sklearn.pipeline import make_pipeline
-#     from sklearn.preprocessing import StandardScaler
-#     new_offsets_in_mm = []
-#     temps = []
-#     first_z = list(new_z_offsets.values())[0]["mcu_z"]
-#     for key, value in new_z_offsets.items():
-#         low_z = value["mcu_z"]
-#         new_offsets_in_mm.append((first_z - low_z) * step_distance)
-#         temps.append(round_by_step(value["frame_temp"], 0.1))
-#
-#     plt.plot(temps, new_offsets_in_mm)
-#     plt.axis([temps[0], temps[-1], new_offsets_in_mm[0], new_offsets_in_mm[-1]])
-#     plt.xlabel('Temperatures [C]')
-#     plt.ylabel('Z height [mm]')
-#     plt.show()
-#
-#     print(new_offsets_in_mm)
-#     regr = SVR(kernel = 'rbf')
-#     x = np.array(temps)
-#     y = np.array(new_offsets_in_mm)
-#     x = x.reshape(-1, 1)
-#     #y = y.reshape(1, -1)
-#
-#     result = regr.fit(x, y)
-#
-#     new_offsets = []
-#     new_temps = []
-#     for temp in np.arange(temps[0], temps[-1], 0.1):
-#         new_offsets.append(result.predict([[temp]])[0])
-#         new_temps.append(round_by_step(temp, 0.1))
-#     print(new_temps, new_offsets)
-#     plt.plot(new_temps, new_offsets)
-#     plt.axis([new_temps[0], new_temps[-1], new_offsets[0], new_offsets[-1]])
-#     plt.xlabel('Temperatures [C]')
-#     plt.ylabel('Z height [mm]')
-#     plt.show()
-#
-#     import statsmodels.api as sm
-#     lowess = sm.nonparametric.lowess
-#
-#     z = lowess(y, x)
-#     w = lowess(y, x, frac=1. / 3)
-#     print(z,w)
