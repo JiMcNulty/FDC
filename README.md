@@ -44,7 +44,8 @@ If you suffer from any of the following:
    
 ## Wait, Dynamic tramming?!
 * Yes.
-* Only applicable for auto tramming (QGL / Z TILT)
+* Only applicable for auto tramming Z TILT at the moment
+  * QGL can be supported - see details below
 * But the bed mesh should take care of it!
   * Here why it doesn't - 
     * When you start the measuring phase -  measuring the deformation, the script automatically tram the bed (QGL / Z TILT) once at the beginning of the test (let's say at 25.1C)

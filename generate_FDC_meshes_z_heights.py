@@ -196,8 +196,8 @@ def gen_missing_meshes_by_step_interpolated(meshes, step):
     new_meshes = np.moveaxis(z_meshes_3d_interpolated.reshape(len(z_meshes_3d[0]), len(z_meshes_3d[0][0]), len(z_meshes_3d_interpolated[0])), -1, 0)
     mesh_params = meshes[list(meshes.keys())[0]]["mesh"]["mesh_params"]
     new_meshes_parsed = add_bed_meshes(temp_list_new, new_meshes, mesh_params, step)
-    plt.plot(temp_list, meshes_2d[5], label=" before interpolation mesh")
-    plt.plot(temp_list_new, z_meshes_3d_interpolated[5], label=" interpolated mesh")
+    plt.plot(temp_list, meshes_2d[5], label=" before interpolation mesh(random point, 5)")
+    plt.plot(temp_list_new, z_meshes_3d_interpolated[5], label=" interpolated mesh(random point, 5)")
     plt.legend()
     plt.show()
     return new_meshes_parsed
