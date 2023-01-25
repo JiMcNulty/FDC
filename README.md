@@ -32,16 +32,16 @@ If you suffer from any of the following:
   * Dynamic and non-linear VGB (up to one mesh per 0.1C!)
   * Dynamic and non-linear z height adjust using Klipper's z_thermal_adjust module 
   * Dynamic and Non-linear tramming
+  
+* ![image](https://user-images.githubusercontent.com/6442378/206245509-7aa45f54-f028-4fa7-9ada-b1f44663651c.png)
+* The picture shows the Z height changes per temperature, in the middle of the bed
 
 ## What changed in 2.1?
 1. Dynamic un-tilt
 2. Smooth generated data to seamlessly change z heights and bed meshes
 3. Filter noise in generated data for even smoother operation (experimental)
    1. Will try to combat 1-5 microns changes that create small waves on flat layers
-
-* ![image](https://user-images.githubusercontent.com/6442378/206245509-7aa45f54-f028-4fa7-9ada-b1f44663651c.png)
-* The picture shows the Z height changes per temperature, in the middle of the bed
-
+   
 ## Wait, Dynamic tramming?!
 * Yes.
 * Only applicable for auto tramming (QGL / Z TILT)
