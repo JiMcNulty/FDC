@@ -35,7 +35,7 @@ BED_TEMPERATURE = 103               # Bed target temperature for measurements.
 
 HE_TEMPERATURE = 235                # Extruder temperature for measurements.
 
-HOT_DURATION = 2                    # time after bed temp reached to continue
+HOT_DURATION = 3                    # time after bed temp reached to continue
                                     # measuring [hours]
 
 SOAK_TIME = 0                       # Time to wait for bed to heatsoak after

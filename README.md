@@ -194,17 +194,20 @@ speed: 500
     1. It is recommended that the bed temp will be your working bed temp, if you print ABS and PETG and require different bed temps there is a chance that the meshes will be different. A more robust version that support multiple bed temps will be made in the future
     2. You want to let it run as much as possible until the printer frame temperature reaches the highest temp you've seen during a long print
     3. Currently, the script will not generate bed meshes and z heights above and below the captured temperatures due to its non-linear behavior
- 3. <b>TRAM_EVERYTIME = True</b> - Only z_tilt printers are supported at the moment
+ 3. <b>HOT_DURATION</b> - Recommended is 3 hours, you wanna catch them all (temperature data points)
+ 4. The bed and hotend temperature should be the exect one you print your first layer with
+    1. If you print ABS and PETG, you currently need to do the test separately for each bed and hotend temperature
+ 5. <b>TRAM_EVERYTIME = True</b> - Only z_tilt printers are supported at the moment
     1. You want to set it to False if your printer is not supported
     2. And you want to then wait a day and run it again with True to see what your tilt situation is
- 4. Make sure the frame is at the lowest temperature possible (like after it was idle for a night)
- 5. If you have any fans / nevermore, start them after the first mesh is done
+ 6. Make sure the frame is at the lowest temperature possible (like after it was idle for a night)
+ 7. If you have any fans / nevermore, start them after the first mesh is done
     1. Simulate the same wind you going to have in the enclosure during a print
     2. But give it a chance to capture the initial bed mesh
- 6. NOTE: your X bowing is directly affected by the temperature of your X gantry
+ 8. NOTE: your X bowing is directly affected by the temperature of your X gantry
     1. So If you have a really long probe for example, the gantry will be higher from the bed then it would if it's printing the first layer, this 5mm-20mm will greatly affect the temperature of the gantry and the bowing.
     2. Part cooling fan cool the X gantry a bit, which will also reduce the bowing, and for the first layer there is no fan so take that into account (don't run the cooling fan during the test)
- 7. 
+ 9. 
 ```
 nohup python3 measure_thermal_behavior.py 0.1 > out.txt &
 tail -F out.txt
@@ -236,6 +239,7 @@ generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
     2. delete bed_mesh.pyc
 14. Save
     1. Shutdown and start (to ensure the bed_mesh.py will load)
+    2. Don't forget to check that it's still there after you do a Klipper update
 
 ### Running for the first time
 1. Take note of your min and max temp, if you start a print when your frame temp is below or above it, the script won't run
