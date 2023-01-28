@@ -3,6 +3,9 @@
 
 ## Benefits
 1. Dynamically readjusting your z height, bed mesh and tilt to make sure your first layer and every layer after that are perfect!
+   1. The need to dynamically readjust is caused by the change in temperature of your frame
+   2. Bimetallic frame components (Aluminum extrusion with steel linear rail) have different thermal expansion values
+   3. This will make the bimetallic part to deform 
 2. Improve overall print time by eliminating the need to do a bed mesh before each print
 3. Improve overall print time by enabling you to start the print without heat soaking
 
