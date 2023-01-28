@@ -1,6 +1,11 @@
 # FDC - Non-linear frame deformation calibration and compensation 2.1
 ### For 3D printers running Klipper
 
+## Benefits
+1. Dynamically readjusting your z height, bed mesh and tilt to make sure your first layer and every layer after that are perfect!
+2. Improve overall print time by eliminating the need to do a bed mesh before each print
+3. Improve overall print time by enabling you to start the print without heat soaking
+
 ## Credits
 * This project lies upon the hard work and dedication of [Deutherius](https://github.com/Deutherius), [alchemyEngine](https://github.com/alchemyEngine) and [tanaes]( https://github.com/tanaes)
 * Although not involved in this specific project, most of the heavy lifting was done by them and most of the code in this project was writen by them.
@@ -240,6 +245,7 @@ generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
 14. Save
     1. Shutdown and start (to ensure the bed_mesh.py will load)
     2. Don't forget to check that it's still there after you do a Klipper update
+    3. If you did a bed mesh every start print you can disable it, you won't need it anymore
 
 ### Running for the first time
 1. Take note of your min and max temp, if you start a print when your frame temp is below or above it, the script won't run
