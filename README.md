@@ -2,7 +2,7 @@
 ### For 3D printers running Klipper
 
 ## Benefits
-1. Dynamically readjusting your z height, bed mesh and tilt to make sure your first layer and every layer after that are perfect!
+1. Dynamically readjusting your z height, bed mesh and tram the bed to make sure your first layer and every layer after that are perfect!
    1. The need to dynamically readjust z height is caused by the change in temperature of your frame
    2. Bimetallic frame components (Aluminum extrusion with steel linear rail) have different thermal expansion values
    3. This will make the bimetallic part deform as temperature raise up
