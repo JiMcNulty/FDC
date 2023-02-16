@@ -195,6 +195,10 @@ speed: 500
       1. You can use whatever you want as long as it touches the aluminum (and not the rail!)
       2. Make sure to cover i. so it will be isolated from the air
       3. I put it on my umbilical, with drag chains it might be easier
+2. They way I did it is by sacrificing the last screw on my linear rail, push the thermistor to it and then shoved a piece of foam between the thermistor and the rail to have consistent good contact with the aluminum
+![Foam](https://user-images.githubusercontent.com/6442378/219497026-756944da-1d53-4cb5-bfb1-fa79a2c94f15.jpg)
+![Thermistor](https://user-images.githubusercontent.com/6442378/219496984-f9313234-1fd6-4051-85b0-19f689f36890.jpg)
+
 ### Python
  1. Python 3.7+ required (3.7+ has ordered dicts by default)
 ### Measure the deformation

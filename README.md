@@ -5,13 +5,16 @@
 1. BI-Metallic 3D printer frames (aluminum + steel rail) will deform with temperature changes
 2. This Klipper plugin will compensate for deformation in real time while printing
 
-## * If you want to know more, read the [extended readme](README_EXTENDED.md)
-
 ## What does it do?
 1. Measure and generate the non-linear compensation profile
 2. Dynamically adjust z height
 3. Dynamically switches bed meshes
 4. Dynamically tram your bed
+
+
+## * If you aren't convinced you need it or plan on using it, read the [Extended Readme](README_EXTENDED.md)
+
+
 
 # How to run 
 ## Prerequisite
@@ -76,10 +79,13 @@ generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
 10. Copy the macro FDC.cfg to the same folder as printer.cfg
 11. Edit the macro and copy the results from the console
 12. Add [include FDC.cfg] to your printer.cfg
-13. If applicable - replace bed_mesh.py (TRAM_EVERYTIME = True)
+13. If applicable (TRAM_EVERYTIME = True)
+```
     1. /home/pi/klipper/klippy/extras/
-    2. delete bed_mesh.pyc
-14. Save
+    2. replace bed_mesh.py
+    3. delete bed_mesh.pyc
+```
+15. Save
     1. Shutdown and start (to ensure the bed_mesh.py will load)
 
 ### Contact
