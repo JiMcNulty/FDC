@@ -59,10 +59,11 @@ speed: 500
 1. X gantry on the opposite side of the X endstop at the end, touching the aluminum
 
 ### Measure and generate profile
- 2. Edit measure_thermal_behavior.py and change the required parameters.
- 5. <b>TRAM_EVERYTIME = True</b> - Only z_tilt printers are supported at the moment
- 6. Make sure the frame is at the lowest temperature possible (like after it was idle for a night)
- 7. If you have any fans / nevermore, start them after the first mesh is done
+1. Edit measure_thermal_behavior.py and change the required parameters.
+2. <b>TRAM_EVERYTIME = True</b> - Only z_tilt printers are supported at the moment
+3. Make sure the frame is at the lowest temperature possible (like after it was idle for a night)
+4. If you have any fans / nevermore, start them after the first mesh is done
+5. Run it on your PI
 
 ```
 nohup python3 measure_thermal_behavior.py 0.1 > out.txt &
@@ -75,11 +76,11 @@ generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
 ```
       
 ### Install FDC on Klipper
-9. Copy the generated mesh from the new cfg file and paste it at the bottom of your printer.cfg
-10. Copy the macro FDC.cfg to the same folder as printer.cfg
-11. Edit the macro and copy the results from the console
-12. Add [include FDC.cfg] to your printer.cfg
-13. If applicable (TRAM_EVERYTIME = True)
+1. Copy the generated mesh from the new cfg file and paste it at the bottom of your printer.cfg
+2. Copy the macro FDC.cfg to the same folder as printer.cfg
+3. Edit the macro and copy the results from the console
+4. Add [include FDC.cfg] to your printer.cfg
+5. If applicable (TRAM_EVERYTIME = True)
 ```
     1. /home/pi/klipper/klippy/extras/
     2. replace bed_mesh.py
