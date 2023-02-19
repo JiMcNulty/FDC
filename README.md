@@ -11,16 +11,19 @@
 3. Dynamically switches bed meshes
 4. Dynamically tram your bed
 
-
-## * If you aren't convinced you need it or plan on using it, read the [Extended Readme](README_EXTENDED.md)
-
-
-
 # How to run 
 ## Prerequisite
-### Python
+### 1. Frame temperature sensor
+1. X gantry on the opposite side of the X endstop at the end, touching the aluminum
+
+### 2. Python
  1. Python 3.7+ required (3.7+ has ordered dicts by default)
-### Bed mesh settings
+
+### 3. z_thermal_adjust and other macros
+1. Enable z_thermal_adjust in your config with temp_coeff=0
+2. Remove VBG if you have it
+
+### 4. Bed mesh settings
 1. Adjust your bed mesh settings so that your mesh middle point is the center of the bed
 2. Disable fade
 3. Increase your bed mesh speed by reducing samples and increasing travel speed
@@ -43,6 +46,7 @@ fade_end: 0
 mesh_min: 40,40
 mesh_max:260,260
 probe_count: 7,7
+# For TRAM_EVERYTIME = True add this:
 z_positions:
 	0,0
 	150,300
@@ -51,14 +55,8 @@ z_positions:
 speed: 500
 ```
 
-### z_thermal_adjust and other macros
-1. Enable z_thermal_adjust in your config with temp_coeff=0
-2. Remove VBG if you have it
-
-### Frame temperature sensor
-1. X gantry on the opposite side of the X endstop at the end, touching the aluminum
-
-### Measure and generate profile
+## Run
+### 1. Measure the frame deformation
 1. Edit measure_thermal_behavior.py and change the required parameters.
 2. <b>TRAM_EVERYTIME = True</b> - Only z_tilt printers are supported at the moment
 3. Make sure the frame is at the lowest temperature possible (like after it was idle for a night)
@@ -70,12 +68,12 @@ nohup python3 measure_thermal_behavior.py 0.1 > out.txt &
 tail -F out.txt
 ```
 
-### Analyze and generate the deformation data
+### 2. Analyze and generate the compensation profile
 ```
 generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
 ```
       
-### Install FDC on Klipper
+### 3. Install FDC on Klipper
 1. Copy the generated mesh from the new cfg file and paste it at the bottom of your printer.cfg
 2. Copy the macro FDC.cfg to the same folder as printer.cfg
 3. Edit the macro and copy the results from the console
@@ -86,8 +84,13 @@ generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
     2. replace bed_mesh.py
     3. delete bed_mesh.pyc
 ```
-15. Save
+6. Save config (Klipper)
     1. Shutdown and start (to ensure the bed_mesh.py will load)
+
+
+## * If you aren't convinced you need it or plan on using it, read the [Extended Readme](README_EXTENDED.md)
+
+
 
 ### Contact
 You can dm me on discord if you have any issues, i'm on the Voron and Ratrig servers
