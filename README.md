@@ -64,6 +64,8 @@ speed: 500
 5. Run it on your PI
 
 ```
+git clone https://github.com/JiMcNulty/FDC
+cd FDC
 nohup python3 measure_thermal_behavior.py 0.1 > out.txt &
 tail -F out.txt
 ```

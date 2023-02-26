@@ -221,6 +221,8 @@ speed: 500
     2. Part cooling fan cool the X gantry a bit, which will also reduce the bowing, and for the first layer there is no fan so take that into account (don't run the cooling fan during the test)
  9. 
 ```
+git clone https://github.com/JiMcNulty/FDC
+cd FDC
 nohup python3 measure_thermal_behavior.py 0.1 > out.txt &
 tail -F out.txt
 ```
