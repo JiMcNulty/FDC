@@ -66,6 +66,9 @@ speed: 500
 ```
 git clone https://github.com/JiMcNulty/FDC
 cd FDC
+
+vim measure_thermal_behavior.py
+
 nohup python3 measure_thermal_behavior.py 0.1 > out.txt &
 tail -F out.txt
 ```
