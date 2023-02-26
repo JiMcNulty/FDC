@@ -41,7 +41,9 @@ samples_tolerance_retries: 1
 ```
 ```
 [bed_mesh]
-horizontal_move_z: 5
+#######fast settings
+speed: 500
+horizontal_move_z: 5 # Should be more than your z_offset otherwise you will crash your nozzle!
 fade_end: 0
 mesh_min: 40,40
 mesh_max:260,260
@@ -51,8 +53,6 @@ z_positions:
 	0,0
 	150,300
 	300,0
-#######fast settings
-speed: 500
 ```
 
 ## Run
@@ -74,8 +74,10 @@ tail -F out.txt
 ```
 
 ### 2. Analyze and generate the compensation profile
+1. Run it on your local PC
 ```
-generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
+python3 -m pip install -r requirements.txt
+python3 generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
 ```
       
 ### 3. Install FDC on Klipper

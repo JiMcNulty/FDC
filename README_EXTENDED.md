@@ -169,17 +169,18 @@ samples_tolerance_retries: 1
 8.  
 ```
 [bed_mesh]
-horizontal_move_z: 5
+#######fast settings
+speed: 500
+horizontal_move_z: 5 # Should be more than your z_offset otherwise you will crash your nozzle!
 fade_end: 0
 mesh_min: 40,40
 mesh_max:260,260
 probe_count: 7,7
+# For TRAM_EVERYTIME = True add this:
 z_positions:
 	0,0
 	150,300
 	300,0
-#######fast settings
-speed: 500
 ```
 9. When everything is set up correctly, you should have a 0.0 point in the middle of the array after a bed mesh
    1. Maybe not 0.0 but close to it
@@ -238,7 +239,8 @@ tail -F out.txt
    2. noise filter -  Enable filtering noise for a smoother graph. if the generated graphs don't look right, disable it (default: True)
 2. 
 ```
-generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
+python3 -m pip install -r requirements.txt
+python3 generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
 ```
 3. While running, you will be shown some generated graphs and the smooth version of them
    1. It is shown to you so you can examine it

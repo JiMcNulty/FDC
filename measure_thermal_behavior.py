@@ -75,7 +75,7 @@ SAVE_CONFIG = "SAVE_CONFIG"
 # If using the Z_THERMAL_ADJUST module. [True/False]
 Z_THERMAL_ADJUST = True
 
-# If using the FDC macro [True/False]
+# If FDC macro is already installed [True/False]
 FDC_MACRO = True
 
 # Full config section name of the frame temperature sensor (if any, can be None). E.g:
