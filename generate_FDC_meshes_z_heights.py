@@ -329,6 +329,7 @@ def main(args):
 
     thermal_data = json.loads(data)
     step_distance = thermal_data["metadata"]["z_axis"]["step_dist"]
+    tramming = thermal_data["metadata"]["z_axis"]["Tramming"]
     steppers = list(thermal_data["hot_mesh"][list(thermal_data["hot_mesh"].keys())[0]]["z_pos"].keys())
     new_meshes = gen_missing_meshes_by_step_interpolated(thermal_data["hot_mesh"], step)
     all_z_offsets = {}
@@ -341,17 +342,19 @@ def main(args):
 
     generate_z_offsets_plot(all_z_offsets, step_distance, "z offsets", source_file[:-5])
 
-    if any(x != {} for x in all_z_tram_offsets):
+    if tramming:
         generate_z_offsets_plot(all_z_tram_offsets, step_distance, "z tram offsets", source_file[:-5])
 
     print("\n############################ COPY FROM HERE COPY FROM HERE COPY FROM HERE ####################################\n")
     print("variable_z_height_temps:", all_z_offsets["stepper_z"])
     print("")
     print("variable_last_trams:", gen_init_last_trams(all_z_tram_offsets))
-    print("variable_z_trams_temps:", all_z_offsets)
-    if any(x != {} for x in all_z_tram_offsets):
+
+    if tramming:
+        print("variable_z_trams_temps:", all_z_offsets)
         print("variable_enable_tram: 1")
     else:
+        print("variable_z_trams_temps:", gen_init_empty_z_trams(all_z_tram_offsets))
         print("variable_enable_tram: 0")
     print("")
     print("variable_temp_min:", list(all_z_offsets["stepper_z"].keys())[0])
@@ -372,6 +375,15 @@ def gen_init_last_trams(all_z_tram_offsets):
     init_last_trams = {}
     for stepper in all_z_tram_offsets.keys():
         init_last_trams[stepper] = 0
+    return init_last_trams
+
+
+def gen_init_empty_z_trams(all_z_tram_offsets):
+    if not bool(all_z_tram_offsets):
+        return dict()
+    init_last_trams = {}
+    for stepper in all_z_tram_offsets.keys():
+        init_last_trams[stepper] = {}
     return init_last_trams
 
 
