@@ -109,7 +109,7 @@ def gather_metadata():
 
     # Gather Z axis information
     bed_mesh = config['bed_mesh']
-    z_tilt = config['z_tilt']
+    z_tilt = config.get('z_tilt', None)
     config_z = config['stepper_z']
     if 'rotation_distance' in config_z.keys():
         rot_dist = config_z['rotation_distance']
