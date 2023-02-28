@@ -9,7 +9,7 @@
 1. Measure and generate the non-linear compensation profile
 2. Dynamically adjust z height
 3. Dynamically switches bed meshes
-4. Dynamically tram your bed
+4. Dynamically tram your bed (z_tilit, quad support in the future)
 
 # How to run 
 ## Prerequisite
@@ -93,6 +93,8 @@ python3 generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
 ```
 6. Save config (Klipper)
     1. Shutdown and start (to ensure the bed_mesh.py will load)
+7. <b>Reset and redo your z_offset!!!
+   1. Fail to do so will risk crashing the nozzle!!</b>
 
 
 ## * If you aren't convinced you need it or plan on using it, read the [Extended Readme](README_EXTENDED.md)

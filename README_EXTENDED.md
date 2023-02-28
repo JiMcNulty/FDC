@@ -260,6 +260,8 @@ python3 generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
     1. Shutdown and start (to ensure the bed_mesh.py will load)
     2. Don't forget to check that it's still there after you do a Klipper update
     3. If you did a bed mesh every start print you can disable it, you won't need it anymore
+15. <b>Reset and redo your z_offset!!!
+    1. Fail to do so will risk crashing the nozzle!!</b>
 
 ### Running for the first time
 1. Take note of your min and max temp, if you start a print when your frame temp is below or above it, the script won't run
