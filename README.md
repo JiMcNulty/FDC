@@ -25,6 +25,7 @@
 
 ### 4. Bed mesh settings
 1. Adjust your bed mesh settings so that your mesh middle point is the center of the bed
+   1. Example: for 400 bed and 9,9 mesh point number 41 should be the middle of the bed (200x200)
 2. Make sure that when you home Z, the PROBE (not nozzle) is at the center of the bed
    1. If you are using RatOS, it's currently a known issue, here is the [fix](https://github.com/JiMcNulty/RatOS-configuration/pull/1/files)
 3. Disable fade

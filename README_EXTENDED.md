@@ -139,6 +139,7 @@ Check out the following repositories:
 ### Bed mesh settings
 0. The most important thing to know is that we need a point in the mesh to be in the center of the bed
    1. Without it the script won't work!
+   2. Example: for 400 bed and 9,9 mesh point number 41 should be the middle of the bed (200x200)
 1. Make sure that when you home Z, the PROBE (not nozzle) is at the center of the bed
    1. Sometimes the Z home doesn't take into account the probe location!
    2. You will have to fix it before you can continue
