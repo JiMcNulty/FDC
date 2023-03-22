@@ -11,7 +11,7 @@
 3. Dynamically switches bed meshes
 4. Dynamically tram your bed (z_tilit, quad support in the future)
 
-## Important note on Dynamic tramming
+## Important note on Quad dynamic tramming (Voron 2.4)
 2. Quad tramming printers are supported!
    1. only the dynamic tramming feature is not
 3. Because of the different nature of the two, most quad printers won't need dynamic tramming
