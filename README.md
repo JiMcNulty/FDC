@@ -72,6 +72,7 @@ z_positions:
 3. Make sure the frame is at the lowest temperature possible (like after it was idle for a night)
 4. If you have any fans / nevermore, start them after the first mesh is done
 5. Run it on your PI
+6. Pro tip: dry run the script beforehand, put 0 in both temperatures, reduce the HOT_DURATION to 0.1 and run the script attached to the terminal
 
 ```
 git clone https://github.com/JiMcNulty/FDC
