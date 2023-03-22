@@ -139,9 +139,10 @@ Check out the following repositories:
 ### Bed mesh settings
 0. The most important thing to know is that we need a point in the mesh to be in the center of the bed
    1. Without it the script won't work!
-1. Make sure that when you home Z, the PROBE is at the center of the bed
+1. Make sure that when you home Z, the PROBE (not nozzle) is at the center of the bed
    1. Sometimes the Z home doesn't take into account the probe location!
    2. You will have to fix it before you can continue
+   3. If you are using RatOS, it's currently a known issue, here is the [fix](https://github.com/JiMcNulty/RatOS-configuration/pull/1/files)
 2. Improve the speed of your probing and disable fade -  long probe sequences will capture a distorted bed mesh due to the fast warming up of the bed and frame
    1. For our purposes, a quick probe is usually sufficient. Below are some suggested settings:
    2. Keep in mind - There is a real problem in the start of the test where the frame temps rise up really fast, that causes the mesh we captured to be distorted if the mesh takes too long

@@ -217,7 +217,8 @@ def send_gcode(cmd='', retries=1):
             print("G-code command '%s', failed. Retry %i/%i" % (cmd,
                                                                 i+1,
                                                                 retries))
-            sleep(3)
+            sleep(10 * (i + 1))
+            home()
         else:
             return True
     return False
@@ -225,7 +226,7 @@ def send_gcode(cmd='', retries=1):
 
 def park_head_center():
     xy_coords = query_xy_middle()
-    send_gcode_nowait("G1 Z10 F300")
+    send_gcode_nowait("G1 Z12 F300")
 
     park_cmd = "G1 X%.1f Y%.1f F18000" % (xy_coords[0], xy_coords[1])
     send_gcode_nowait(park_cmd)
