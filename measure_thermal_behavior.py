@@ -31,6 +31,9 @@ NOTES = ''              # anything note-worthy about this particular run,
 BASE_URL = 'http://127.0.0.1:7125'  # Printer URL (e.g. http://192.168.1.15)
                                     # leave default if running locally on Pi.
 
+# Temperatures should be the exact one you will use while printing
+# Different set of temperatures will require different runs of the script to create different profiles
+
 BED_TEMPERATURE = 103               # Bed target temperature for measurements.
 
 HE_TEMPERATURE = 235                # Extruder temperature for measurements.
@@ -76,9 +79,12 @@ SAVE_CONFIG = "SAVE_CONFIG"
 Z_THERMAL_ADJUST = True
 
 # If FDC macro is already installed [True/False]
-FDC_MACRO = True
+FDC_MACRO = False
 
-# Full config section name of the frame temperature sensor (if any, can be None). E.g:
+# Full config section name of the other temperature sensor (if any, can be None)
+# Chamber sensor is irrelevant and is not needed anywhere in the FDC solution
+# It's here only if you already have one and one to log the data
+# If you don't have one don't give it a second thought, we don't need it for FDC
 CHAMBER_SENSOR = "temperature_sensor chamber"
 #CHAMBER_SENSOR = None
 
