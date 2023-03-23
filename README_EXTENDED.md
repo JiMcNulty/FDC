@@ -251,18 +251,22 @@ python3 generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
       
 ### Install FDC on Klipper
 9. Copy the generated mesh from the new cfg file and paste it at the bottom of your printer.cfg
-10. Copy the macro FDC.cfg to the same folder as printer.cfg
-11. Edit the macro with the min max temp, step and z_height_temps dictionary that was <b>printed when you ran the script</b>
+   1. Paste if after the string ...-- SAVE_CONFIG --...
+   2. And after the default bed mesh
+   3. If you don't have one just copy your first bed mesh and change the name
+   4. This two things are mandatory for klipper
+11. Copy the macro FDC.cfg to the same folder as printer.cfg
+12. Edit the macro with the min max temp, step and z_height_temps dictionary that was <b>printed when you ran the script</b>
     1. variable_precision is the precision of step. ie - 0.1 step is 1, 0.05 is 2, 1 is 0
-12. Add [include FDC.cfg] to your printer.cfg
-13. If applicable - replace bed_mesh.py
+13. Add [include FDC.cfg] to your printer.cfg
+14. If applicable - replace bed_mesh.py
     1. /home/pi/klipper/klippy/extras/
     2. delete bed_mesh.pyc
-14. Save
+15. Save
     1. Shutdown and start (to ensure the bed_mesh.py will load)
     2. Don't forget to check that it's still there after you do a Klipper update
     3. If you did a bed mesh every start print you can disable it, you won't need it anymore
-15. <b>Reset and redo your z_offset!!!
+16. <b>Reset and redo your z_offset!!!
     1. Fail to do so will risk crashing the nozzle!!</b>
 
 ### Running for the first time
