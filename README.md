@@ -27,7 +27,7 @@
  1. Python 3.7+ required (3.7+ has ordered dicts by default)
 
 ### 3. z_thermal_adjust and other macros
-1. Enable z_thermal_adjust in your config with temp_coeff=0
+1. Enable [z_thermal_adjust](https://www.klipper3d.org/Config_Reference.html#z_thermal_adjust) in your config with temp_coeff=0
 2. Remove VBG if you have it
 
 ### 4. Bed mesh settings

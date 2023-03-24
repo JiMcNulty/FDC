@@ -187,7 +187,7 @@ z_positions:
 9. When everything is set up correctly, you should have a 0.0 point in the middle of the array after a bed mesh
    1. Maybe not 0.0 but close to it
 ### z_thermal_adjust and other macros
-1. Enable z_thermal_adjust in your config with temp_coeff=0
+1. Enable [z_thermal_adjust](https://www.klipper3d.org/Config_Reference.html#z_thermal_adjust) in your config with temp_coeff=0
    1. This is where you define your frame sensor
 2. Remove VBG if you have it
 ### Frame temperature sensor
