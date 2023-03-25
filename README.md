@@ -22,7 +22,8 @@
 1. If you suffer from X bowing (you can see a bowed bed mesh)
    1. While hot, try loosening the screws that hold the linear rail, just a bit, to allow for some movement when expending
    2. Do a before and after bed mesh and see if there is any difference
-1. If you suffer from Y bowing, do this to the Y rails
+2. Same goes for Y
+3. You gonna need to run the measure script again if you change anything
 
 # How to run 
 ## Prerequisite
