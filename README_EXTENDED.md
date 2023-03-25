@@ -134,6 +134,12 @@ Check out the following repositories:
 
 [measure_thermal_behavior](https://github.com/alchemyEngine/measure_thermal_behavior), This script runs a series of defined homing and probing routines designed to characterize how the perceived Z height of the printer changes as the printer frame heats up. It does this by interfacing with the Moonraker API, so you will need to ensure you have Moonraker running.
 
+## A tip Before you start
+1. If you suffer from X bowing (you can see a bowed bed mesh)
+   1. While hot, try loosening the screws that hold the linear rail, just a bit, to allow for some movement when expending
+   2. Do a before and after bed mesh and see if there is any difference
+1. If you suffer from Y bowing, do this to the Y rails
+
 # How to run 
 ## Prerequisite
 ### Bed mesh settings

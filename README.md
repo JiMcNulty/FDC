@@ -12,11 +12,17 @@
 4. Dynamically tram your bed (z_tilit, quad support in the future)
 
 ## Important note on Quad dynamic tramming (Voron 2.4)
-2. Quad tramming printers are supported!
+1. Quad tramming printers are supported!
    1. only the dynamic tramming feature is not
-3. Because of the different nature of the two, most quad printers won't need dynamic tramming
-4. So, FDC will solve the problem for printers like the <b>Voron 2.4</b>
+2. Because of the different nature of the two, most quad printers won't need dynamic tramming
+3. So, FDC will solve the problem for printers like the <b>Voron 2.4</b>
    1. Just change the parameter to  <b>TRAM_EVERYTIME = False</b>
+
+## A tip Before you start
+1. If you suffer from X bowing (you can see a bowed bed mesh)
+   1. While hot, try loosening the screws that hold the linear rail, just a bit, to allow for some movement when expending
+   2. Do a before and after bed mesh and see if there is any difference
+1. If you suffer from Y bowing, do this to the Y rails
 
 # How to run 
 ## Prerequisite
