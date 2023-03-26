@@ -47,8 +47,7 @@ def get_middle_point_from_mesh(zpoints):
     middle_y = round(len(zpoints) / 2)
     middle_x = round(len(zpoints[0]) / 2)
 
-    # list start from 0 so -1
-    return zpoints[middle_y - 1][middle_x - 1]
+    return zpoints[middle_y][middle_x]
 
 
 def normal_mesh_to_point(zpoints, new_middle_z):
