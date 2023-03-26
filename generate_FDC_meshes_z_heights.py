@@ -44,10 +44,12 @@ def add_bed_meshes(temp_list, mesh_list, mesh_params, step):
 def get_middle_point_from_mesh(zpoints):
     if len(zpoints) % 2 == 0  or len(zpoints[0]) % 2 == 0:
         raise Exception("Mesh is supposed to have an odd number of probes! (5,5) (7,7) (9,9) and so on, current probe count (%s, %s)" % (len(zpoints), len(zpoints[0])))
-    middle_y = round(len(zpoints) / 2)
-    middle_x = round(len(zpoints[0]) / 2)
 
-    return zpoints[middle_y][middle_x]
+    # 0.5 because of python's 3 round half to even
+    middle_y = round(len(zpoints) / 2 + 0.5)
+    middle_x = round(len(zpoints[0]) / 2 + 0.5)
+
+    return zpoints[middle_y - 1][middle_x - 1]
 
 
 def normal_mesh_to_point(zpoints, new_middle_z):
