@@ -65,7 +65,7 @@ fade_end: 0
 mesh_min: 40,40
 mesh_max:260,260
 probe_count: 7,7
-
+```
 ## Run
 ### 1. Measure the frame deformation
 1. Edit measure_thermal_behavior.py and change the required parameters.
