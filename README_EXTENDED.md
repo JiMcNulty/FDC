@@ -185,11 +185,6 @@ fade_end: 0
 mesh_min: 40,40
 mesh_max:260,260
 probe_count: 7,7
-# For TRAM_EVERYTIME = True add this:
-z_positions:
-	0,0
-	150,300
-	300,0
 ```
 9. When everything is set up correctly, you should have a 0.0 point in the middle of the array after a bed mesh
    1. Maybe not 0.0 but close to it
@@ -266,14 +261,26 @@ python3 generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
 12. Edit the macro with the min max temp, step and z_height_temps dictionary that was <b>printed when you ran the script</b>
     1. variable_precision is the precision of step. ie - 0.1 step is 1, 0.05 is 2, 1 is 0
 13. Add [include FDC.cfg] to your printer.cfg
-14. If applicable - replace bed_mesh.py
+14. Only if applicable (if you set TRAM_EVERYTIME to True) you will need to override the bed_mesh.py file
+```
     1. /home/pi/klipper/klippy/extras/
-    2. delete bed_mesh.pyc
-15. Save
+    2. replace bed_mesh.py
+    3. delete bed_mesh.pyc
+    4. add this to your config
+    [bed_mesh]
+    ...
+    # For TRAM_EVERYTIME = True add this:
+    # values should match your machine, this is just an example 
+      z_positions:
+      	0,0
+      	150,300
+      	300,0
+```
+16. Save
     1. Shutdown and start (to ensure the bed_mesh.py will load)
     2. Don't forget to check that it's still there after you do a Klipper update
     3. If you did a bed mesh every start print you can disable it, you won't need it anymore
-16. <b>Reset and redo your z_offset!!!
+17. <b>Reset and redo your z_offset!!!
     1. Fail to do so will risk crashing the nozzle!!</b>
 
 ### Running for the first time

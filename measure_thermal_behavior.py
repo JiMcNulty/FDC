@@ -28,8 +28,9 @@ NOTES = ''              # anything note-worthy about this particular run,
 #####################################
 
 ######### CONFIGURATION #############
-BASE_URL = 'http://127.0.0.1:7125'  # Printer URL (e.g. http://192.168.1.15)
-                                    # leave default if running locally on Pi.
+BASE_URL = 'http://127.0.0.1:7125'  # Don't change it if running locally on Pi.
+                                    # You should run this script on your Klipper's PI
+                                    # Printer URL (e.g. http://192.168.1.15)
 
 # Temperatures should be the exact one you will use while printing
 # Different set of temperatures will require different runs of the script to create different profiles

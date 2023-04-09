@@ -112,6 +112,15 @@ python3 generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
     1. /home/pi/klipper/klippy/extras/
     2. replace bed_mesh.py
     3. delete bed_mesh.pyc
+    4. add this to your config
+    [bed_mesh]
+    ...
+    # For TRAM_EVERYTIME = True add this:
+    # values should match your machine, this is just an example 
+      z_positions:
+      	0,0
+      	150,300
+      	300,0
 ```
 6. Save config (Klipper)
     1. Shutdown and start (to ensure the bed_mesh.py will load)
