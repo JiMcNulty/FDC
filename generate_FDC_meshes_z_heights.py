@@ -330,7 +330,7 @@ def main(args):
 
     thermal_data = json.loads(data)
     step_distance = thermal_data["metadata"]["z_axis"]["step_dist"]
-    tramming = thermal_data["metadata"]["z_axis"]["Tramming"]
+    tramming = thermal_data["hot_mesh"][list(thermal_data["hot_mesh"].keys())[0]]["z_pos_after_tram"]
     steppers = list(thermal_data["hot_mesh"][list(thermal_data["hot_mesh"].keys())[0]]["z_pos"].keys())
     new_meshes = gen_missing_meshes_by_step_interpolated(thermal_data["hot_mesh"], step)
     all_z_offsets = {}
