@@ -250,18 +250,19 @@ python3 generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
    1. It is shown to you so you can examine it
    2. If they don't look right to you i.e. the filtering and smoothing made it look like it doesn't follow the points - don't use the data
       1. Disable filtering and try again
-      
+4. Edit the FDC.cfg macro file - copy the output results from the cmd console
+   1. Edit the macro with the min max temp, step and z_height_temps dictionary that was <b>printed when you ran the script</b>
+   2. variable_precision is the precision of step. ie - 0.1 step is 1, 0.05 is 2, 1 is 0
+
 ### Install FDC on Klipper
 9. Copy the generated mesh from the new cfg file and paste it at the bottom of your printer.cfg
    1. Paste if after the string ...-- SAVE_CONFIG --...
    2. And after the default bed mesh
    3. If you don't have one just copy your first bed mesh and change the name
    4. This two things are mandatory for klipper
-11. Copy the macro FDC.cfg to the same folder as printer.cfg
-12. Edit the macro with the min max temp, step and z_height_temps dictionary that was <b>printed when you ran the script</b>
-    1. variable_precision is the precision of step. ie - 0.1 step is 1, 0.05 is 2, 1 is 0
-13. Add [include FDC.cfg] to your printer.cfg
-14. Only if applicable (if you set TRAM_EVERYTIME to True) you will need to override the bed_mesh.py file
+10. Copy the macro FDC.cfg to the same folder as printer.cfg
+11. Add [include FDC.cfg] to your printer.cfg
+12. Only if applicable (if you set TRAM_EVERYTIME to True) you will need to override the bed_mesh.py file
 ```
     1. /home/pi/klipper/klippy/extras/
     2. replace bed_mesh.py

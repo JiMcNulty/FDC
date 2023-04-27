@@ -91,7 +91,8 @@ tail -F out.txt
 python3 -m pip install -r requirements.txt
 python3 generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
 ```
-      
+3. Edit the FDC.cfg macro file - copy the output results from the cmd console
+
 ### 3. Install FDC on Klipper
 1. Copy the generated mesh from the new cfg file and paste it at the bottom of your printer.cfg
    1. Paste if after the string ...-- SAVE_CONFIG --...
@@ -99,9 +100,8 @@ python3 generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
    3. If you don't have one just copy your first bed mesh and change the name
    4. This two things are mandatory for klipper
 2. Copy the macro FDC.cfg to the same folder as printer.cfg
-3. Edit the macro and copy the results from the console
-4. Add [include FDC.cfg] to your printer.cfg
-5. Only if applicable (if you set TRAM_EVERYTIME to True) you will need to override the bed_mesh.py file
+3. Add [include FDC.cfg] to your printer.cfg
+4. Only if applicable (if you set TRAM_EVERYTIME to True) you will need to override the bed_mesh.py file
 ```
     1. /home/pi/klipper/klippy/extras/
     2. replace bed_mesh.py
