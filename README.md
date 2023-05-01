@@ -121,6 +121,13 @@ python3 generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
 7. <b>Reset and redo your z_offset!!!
    1. Fail to do so will risk crashing the nozzle!!</b>
 
+## What is ref_temp?
+1. ref_temp is part of the z_thermal Klipper module
+2. It is set every time you home Z (like before you start a print when you home all axis)
+3. The error "out of range" is a FDC error
+   1. The print has started before the gantry temp is in the captured range (variable_temp_min) so FDC won't start working
+4. To fix it, just heat the printer a little before you start, 1-2 min
+5. If you didn't start the measure test when the printer was cold then you might want to re-do the measurement.
 
 ## * If you aren't convinced you need it or plan on using it, read the [Extended Readme](README_EXTENDED.md)
 

@@ -291,6 +291,13 @@ python3 generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
 3. z_themral_adjust will be adjusted in real time
    1. Turning it from a linear module to non-linear
     
+### What is ref_temp?
+1. ref_temp is part of the z_thermal Klipper module
+2. It is set every time you home Z (like before you start a print when you home all axis)
+3. The error "out of range" is a FDC error
+   1. The print has started before the gantry temp is in the captured range (variable_temp_min) so FDC won't start working
+4. To fix it, just heat the printer a little before you start, 1-2 min
+5. If you didn't start the measure test when the printer was cold then you might want to re-do the measurement.
 
 ### Contact
 You can dm me on discord if you have any issues, i'm on the Voron and Ratrig servers
