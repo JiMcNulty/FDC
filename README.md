@@ -91,7 +91,10 @@ tail -F out.txt
 python3 -m pip install -r requirements.txt
 python3 generate_FDC_meshes_z_heights.py json_file 0.1 --filter_noise
 ```
-3. Edit the FDC.cfg macro file - copy the output results from the cmd console
+2. Edit the FDC.cfg macro file - copy the output results from the cmd console
+3. While running, you will be shown some generated graphs and the smooth version of them
+   1. It is shown to you so you can examine it, if the smoothing is to harsh use --no-filter
+   2. Close the graph window to move to the next one
 
 ### 3. Install FDC on Klipper
 1. Copy the generated mesh from the new cfg file and paste it at the bottom of your printer.cfg
