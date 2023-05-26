@@ -17,6 +17,7 @@
 2. Because of the different nature of the two, most quad printers won't need dynamic tramming
 3. So, FDC will solve the problem for printers like the <b>Voron 2.4</b>
    1. Just change the parameter to  <b>TRAM_EVERYTIME = False</b>
+4. This will be the equivalent of an improved VGB, with the addition of automated z_thermal_adjust
 
 ## A tip Before you start
 1. If you suffer from X bowing (you can see a bowed bed mesh)
